@@ -70,7 +70,6 @@ export default function RegisterModal({ onClose }: RegisterModalProps) {
             await register(email, password);
             onClose();
         } catch (err: unknown) {
-            
             // Универсальное сообщение для любой ошибки регистрации
             let message = "Неверные данные. Проверьте почту и пароль";
             let highlight: "email" | "password" | null = "email";

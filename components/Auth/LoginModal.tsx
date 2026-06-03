@@ -53,28 +53,34 @@ export default function LoginModal({ onClose }: LoginModalProps) {
         try {
             await login(email, password);
             onClose();
-                } catch (err: unknown) {
-
+        } catch (err: unknown) {
             // 1. Начинаем с универсального сообщения для ошибок авторизации
             let message = "Неверные данные. Проверьте почту и пароль";
-            
+
             if (err instanceof Error) {
                 const lowerMsg = err.message.toLowerCase();
-                
+
                 // 2. Если сервер явно сказал "не найден" — показываем это
-                if (lowerMsg.includes("not found") || lowerMsg.includes("не найден")) {
+                if (
+                    lowerMsg.includes("not found") ||
+                    lowerMsg.includes("не найден")
+                ) {
                     message = "Пользователь с таким email не найден";
                     setFieldErrors((prev) => ({ ...prev, email: true }));
-                } 
+                }
                 // 3. Если сервер явно сказал про пароль — показываем это
-                else if (lowerMsg.includes("password") || lowerMsg.includes("пароль") || lowerMsg.includes("неверн")) {
+                else if (
+                    lowerMsg.includes("password") ||
+                    lowerMsg.includes("пароль") ||
+                    lowerMsg.includes("неверн")
+                ) {
                     message = "Неверный пароль";
                     setFieldErrors((prev) => ({ ...prev, password: true }));
                 }
                 // 4. Для всего остального (включая "400") оставляем универсальное сообщение
                 // (явное условие для 400 не нужно, так как это уже значение по умолчанию)
             }
-            
+
             // 5. Гарантированно показываем сообщение
             setError(message);
         }
