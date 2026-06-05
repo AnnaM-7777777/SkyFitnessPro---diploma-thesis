@@ -44,7 +44,8 @@ export default function CoursePage() {
 
     const handleAddCourse = async () => {
         if (!user) {
-            router.push(`/login?redirect=/courses/${id}`);
+            /* router.push(`/login?redirect=/courses/${id}`); */
+            router.push(`/?modal=login`, undefined, { shallow: true });
             return;
         }
         try {
