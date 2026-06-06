@@ -12,7 +12,12 @@ import {
     type AuthUser,
 } from "@/libs/apiAuth";
 
-type User = { email: string } | null;
+type User = {
+    email: string;
+    name?: string;
+    imageUrl?: string;
+    _id?: string;
+} | null;
 
 type AuthContextType = {
     user: User;
@@ -31,21 +36,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
-    // Проверяем токен при загрузке
+    // Восстанавливаем пользователя при загрузке страницы
     useEffect(() => {
         const savedToken = localStorage.getItem("fitness_token");
-        if (savedToken) {
-            setToken(savedToken);
-            // В демо-режиме считаем, что токен = авторизован
-            setUser({ email: "user@skyfitness.pro" });
+        const savedUser = localStorage.getItem("fitness_user");
+
+        if (savedToken && savedUser) {
+            try {
+                setToken(savedToken);
+                setUser(JSON.parse(savedUser));
+            } catch (err) {
+                console.error("Ошибка восстановления пользователя:", err);
+                localStorage.removeItem("fitness_user");
+            }
         }
         setIsLoading(false);
     }, []);
 
-    // Вход (используем apiFetch → удалённый бэкенд)
+    // Вход
     const login = async (email: string, password: string) => {
         try {
-            // 👇 Передаём email как login, потому что внешний API так ожидает
             const user: AuthUser = await authLogin({ login: email, password });
 
             if (user.token) {
@@ -53,20 +63,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 setToken(user.token);
             }
 
-            // Маппим: login из API → email в нашем стейте
-            setUser({ email: user.login });
+            // Сохраняем данные пользователя (они уже с сервера)
+            const userData = {
+                email: user.login,
+                name: user.name,
+                imageUrl: user.imageUrl,
+                _id: user._id,
+            };
+            localStorage.setItem("fitness_user", JSON.stringify(userData));
+            setUser(userData);
+
             router.push("/");
         } catch (err: any) {
             throw new Error(err.message || "Ошибка входа");
         }
     };
 
+    // Регистрация
     const register = async (email: string, password: string) => {
         try {
             const user: AuthUser = await authRegister({
                 login: email,
                 password,
-                name: email.split("@")[0], // генерируем имя из почты
+                name: email.split("@")[0],
             });
 
             if (user.token) {
@@ -74,7 +93,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 setToken(user.token);
             }
 
-            setUser({ email: user.login });
+            const userData = {
+                email: user.login,
+                name: user.name,
+                imageUrl: user.imageUrl,
+                _id: user._id,
+            };
+            localStorage.setItem("fitness_user", JSON.stringify(userData));
+            setUser(userData);
+
             router.push("/");
         } catch (err: any) {
             throw new Error(err.message || "Ошибка регистрации");
@@ -84,9 +111,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Выход
     const logout = () => {
         localStorage.removeItem("fitness_token");
+        localStorage.removeItem("fitness_user");
         setToken(null);
         setUser(null);
-        router.push("/auth/login");
+        router.push("/");
     };
 
     return (
