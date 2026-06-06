@@ -22,6 +22,7 @@
   --text-primary: rgba(0, 0, 0, 1);
   --text-secondary: rgba(255, 255, 255, 1);
   --text-placeholder: rgba(208, 206, 206, 1);
+  --text-grey: rgba(153, 153, 153, 1); 
 
   /* Границы */
   --border-btn-secondary: rgba(0, 0, 0, 1); /* border кнопки */

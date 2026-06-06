@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import styles from "./Header.module.css";
 import Logo from "../../components/Logo/Logo";
@@ -66,15 +67,31 @@ export default function Header() {
                             aria-expanded={isMenuOpen}
                             aria-label="Меню профиля"
                         >
+                            {/* Универсальная иконка аватара */}
+                            <div className={styles.header__userAvatar}>
+                                <Image
+                                    src="/img/icon.png"
+                                    alt="add"
+                                    width={42}
+                                    height={42}
+                                    priority
+                                />
+                            </div>
+
+                            {/* Имя пользователя */}
                             <span className={styles.header__userName}>
-                                {user.email?.split("@")[0] || "Профиль"}
+                                {user.name ||
+                                    user.email?.split("@")[0] ||
+                                    "Профиль"}
                             </span>
+
+                            {/* Стрелка */}
                             <svg
                                 className={`${styles.header__chevron} ${
                                     isMenuOpen ? styles.header__chevronUp : ""
                                 }`}
-                                width="16"
-                                height="16"
+                                width="20"
+                                height="20"
                                 viewBox="0 0 16 16"
                                 fill="none"
                                 aria-hidden="true"
@@ -89,57 +106,27 @@ export default function Header() {
                             </svg>
                         </button>
 
+                        {/* Выпадающее меню профиля */}
                         {isMenuOpen && (
                             <div className={styles.header__dropdownMenu}>
-                                <div className={styles.header__userInfo}>
-                                    <div
-                                        className={
-                                            styles.header__userInfoAvatar
-                                        }
-                                    >
-                                        <svg
-                                            width="32"
-                                            height="32"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            aria-hidden="true"
-                                        >
-                                            <path
-                                                d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
-                                                fill="currentColor"
-                                            />
-                                        </svg>
-                                    </div>
-                                    <div
-                                        className={styles.header__userInfoText}
-                                    >
-                                        <div
-                                            className={
-                                                styles.header__userInfoName
-                                            }
-                                        >
-                                            Профиль
-                                        </div>
-                                        <div
-                                            className={
-                                                styles.header__userInfoEmail
-                                            }
-                                        >
-                                            {user.email}
-                                        </div>
-                                    </div>
+                                <div className={styles.header__userName}>
+                                    {user.name || "Пользователь"}
+                                </div>
+
+                                <div className={styles.header__userEmail}>
+                                    {user.email}
                                 </div>
 
                                 <Link
                                     href="/profile"
-                                    className={`${styles.header__menuButton} ${styles.btnPrimary}`}
+                                    className={`${styles.header__menuButton} btn-primary`}
                                     onClick={() => setIsMenuOpen(false)}
                                 >
                                     Мой профиль
                                 </Link>
 
                                 <button
-                                    className={`${styles.header__menuButton} ${styles.btnOutline}`}
+                                    className={`${styles.header__menuButton} btn-secondary`}
                                     onClick={handleLogout}
                                 >
                                     Выйти
