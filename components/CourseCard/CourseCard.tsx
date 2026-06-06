@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/libs/apiConfig";
@@ -33,6 +33,8 @@ export default function CourseCard({ course }: CourseCardProps) {
         message: string;
         type: "error" | "success";
     } | null>(null);
+    const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
+    const [showCustomCursor, setShowCustomCursor] = useState(false);
 
     const title = course.nameRU || course.title || course.name || "Курс";
 
@@ -45,7 +47,6 @@ export default function CourseCard({ course }: CourseCardProps) {
 
     const handleAddCourse = async () => {
         if (!user) {
-            // Показываем toast, что нужно войти
             setToast({
                 message: "Сначала нужно войти, чтобы добавить курс",
                 type: "error",
@@ -70,6 +71,23 @@ export default function CourseCard({ course }: CourseCardProps) {
         }
     };
 
+    // 👇 Вынесены НАРУЖУ useEffect
+    const handleMouseEnter = () => setShowCustomCursor(true);
+    const handleMouseLeave = () => setShowCustomCursor(false);
+
+    // Глобальное отслеживание мыши для кастомного курсора
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            setCursorPos({
+                x: e.clientX,
+                y: e.clientY,
+            });
+        };
+
+        window.addEventListener("mousemove", handleMouseMove);
+        return () => window.removeEventListener("mousemove", handleMouseMove);
+    }, []);
+
     return (
         <>
             <article className={styles.cards__course}>
@@ -88,6 +106,8 @@ export default function CourseCard({ course }: CourseCardProps) {
                         aria-label="Добавить курс"
                         onClick={handleAddCourse}
                         disabled={isAdded}
+                        onMouseEnter={handleMouseEnter}
+                        onMouseLeave={handleMouseLeave}
                     >
                         <Image
                             src="/img/btnAddIcon.png"
@@ -143,6 +163,25 @@ export default function CourseCard({ course }: CourseCardProps) {
                     </span>
                 </div>
             </article>
+
+            {/* Кастомный курсор */}
+            <div
+                className={`${styles.customCursor} ${showCustomCursor ? styles.customCursor_visible : ""}`}
+                style={{ left: `${cursorPos.x}px`, top: `${cursorPos.y}px` }}
+            >
+                <div className={styles.customCursor__arrow}>
+                    <Image
+                        src="/img/customCursor.png"
+                        alt=""
+                        width={24}
+                        height={24}
+                        priority
+                        style={{ objectFit: "contain" }}
+                    />
+                </div>
+
+                <div className={styles.customCursor__text}>Добавить курс</div>
+            </div>
 
             {/* Toast-уведомление */}
             {toast && (
