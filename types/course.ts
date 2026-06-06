@@ -13,7 +13,11 @@ export interface Course {
     imageBG?: string;
     image?: string;
     durationInDays?: number;
-    dailyDurationInMinutes?: DailyDuration;
+    /* dailyDurationInMinutes?: DailyDuration; */
+    dailyDurationInMinutes?: {
+        from: number;
+        to: number;
+    };
     description?: string;
     directions?: string[];
     fitting?: string[];

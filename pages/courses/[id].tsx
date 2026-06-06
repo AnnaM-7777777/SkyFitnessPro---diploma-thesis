@@ -9,6 +9,59 @@ import styles from "./CoursePage.module.css";
 import Image from "next/image";
 import Link from "next/link";
 
+// Определяем тему по названию курса
+const getCourseThemeByTitle = (title: string) => {
+    const lowerTitle = title.toLowerCase();
+
+    if (lowerTitle.includes("йог")) {
+        return {
+            image: "/img/1-yoga-b.jpg",
+            color: "rgba(255, 199, 0, 1)",
+            backgroundSize: "auto 100%",
+            backgroundPosition: "right",
+        };
+    }
+    if (lowerTitle.includes("стретч") || lowerTitle.includes("растяж")) {
+        return {
+            image: "/img/2-stretching-b.jpg",
+            color: "rgba(36, 145, 210, 1)",
+            backgroundSize: "auto 100%",
+            backgroundPosition: "right",
+        };
+    }
+    if (lowerTitle.includes("фитнес") || lowerTitle.includes("fitness")) {
+        return {
+            image: "/img/3-fitness-b.jpg",
+            color: "rgba(247, 160, 18, 1)",
+            backgroundSize: "auto 100%",
+            backgroundPosition: "right",
+        };
+    }
+    if (lowerTitle.includes("аэроб") || lowerTitle.includes("aerob")) {
+        return {
+            image: "/img/4-aerobics-b.jpg",
+            color: "rgba(255, 126, 101, 1)",
+            backgroundSize: "auto 100%",
+            backgroundPosition: "right",
+        };
+    }
+    if (lowerTitle.includes("бодифлекс") || lowerTitle.includes("bodyflex")) {
+        return {
+            image: "/img/5-bodyflex-b.jpg",
+            color: "rgba(125, 69, 140, 1)",
+            backgroundSize: "auto 100%",
+            backgroundPosition: "right",
+        };
+    }
+
+    return {
+        image: "/img/1-yoga-b.jpg",
+        color: "rgba(255, 199, 0, 1)",
+        backgroundSize: "auto 100%",
+        backgroundPosition: "right",
+    };
+};
+
 export default function CoursePage() {
     const router = useRouter();
     const { id } = router.query;
@@ -20,7 +73,6 @@ export default function CoursePage() {
     useEffect(() => {
         if (!id) return;
 
-        // Гарантируем, что id — строка
         const courseId = Array.isArray(id) ? id[0] : id;
 
         const fetchCourse = async () => {
@@ -44,7 +96,7 @@ export default function CoursePage() {
 
     const handleAddCourse = async () => {
         if (!user) {
-            router.push(`/login?redirect=/courses/${id}`);
+            router.push(`/?modal=login`, undefined, { shallow: true });
             return;
         }
         try {
@@ -69,7 +121,7 @@ export default function CoursePage() {
             <div className={styles.notFound}>
                 <Header />
                 <p>Курс не найден 😔</p>
-                <Link href="/" className={styles.backLink}>
+                <Link href="/" className="btn-primary">
                     ← На главную
                 </Link>
             </div>
@@ -77,67 +129,91 @@ export default function CoursePage() {
     }
 
     const title = course.nameRU || course.title || course.name || "Курс";
-    const bgImage = course.imageBG || course.image || "/img/1-yoga-l.png";
+
+    // Получаем ID курса и определяем тему
+    const currentCourseId = Array.isArray(id) ? id[0] : id || "";
+    console.log("🔍 ID курса:", currentCourseId);
+    const {
+        image: courseImage,
+        color: courseColor,
+        backgroundSize,
+        backgroundPosition,
+    } = getCourseThemeByTitle(title);
 
     return (
         <div className={styles.page}>
             <Header />
 
-            {/* Шапка курса */}
-            <section className={styles.header}>
+            {/* Шапка курса — с динамическим фоном и картинкой */}
+            <section
+                className={styles.header}
+                style={{ backgroundColor: courseColor }}
+            >
                 <div className={styles.header__content}>
                     <h1 className={styles.header__title}>{title}</h1>
-                    <p className={styles.header__description}>
-                        {course.description || "Описание курса будет здесь"}
-                    </p>
-                    <div className={styles.header__meta}>
-                        <span>⏱ {course.durationInDays || 25} дней</span>
-                        <span>
-                            🕐 {course.dailyDurationInMinutes?.from || 20}-
-                            {course.dailyDurationInMinutes?.to || 50} мин/день
-                        </span>
-                    </div>
                 </div>
-                <div className={styles.header__image}>
-                    <Image
-                        src={bgImage}
-                        alt={title}
-                        fill
-                        style={{ objectFit: "cover", borderRadius: "16px" }}
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                    />
-                </div>
+
+                <div
+                    className={styles.header__image}
+                    style={{
+                        backgroundImage: `url(${courseImage})`,
+                        backgroundSize: backgroundSize || "cover",
+                        backgroundPosition: backgroundPosition || "center top",
+                        backgroundRepeat: "no-repeat",
+                    }}
+                />
+            </section>
+
+            {/* Описание курса */}
+            <section className={styles.description}>
+                <p className={styles.description__text}>
+                    <span className={styles.description__title}>
+                        {title} –{" "}
+                    </span>
+                    {course.description || "Описание курса будет здесь"}
+                </p>
             </section>
 
             {/* Блок "Подойдет для вас, если" */}
-            <section className={styles.section}>
-                <h2 className={styles.section__title}>
-                    Подойдет для вас, если:
-                </h2>
-                <div className={styles.conditions}>
+            <section className={styles.conditions}>
+                <h2 className={styles.title}>Подойдет для вас, если:</h2>
+
+                <div className={styles.conditions__block}>
                     <div className={styles.condition}>
                         <span className={styles.condition__number}>1</span>
-                        <p>Давно хотели попробовать, но не решались начать</p>
+                        <p className={styles.condition__description}>
+                            Давно хотели попробовать, но не решались начать
+                        </p>
                     </div>
+
                     <div className={styles.condition}>
                         <span className={styles.condition__number}>2</span>
-                        <p>Хотите укрепить тело и улучшить самочувствие</p>
+                        <p className={styles.condition__description}>
+                            Хотите укрепить тело и улучшить самочувствие
+                        </p>
                     </div>
+
                     <div className={styles.condition}>
                         <span className={styles.condition__number}>3</span>
-                        <p>Ищете активность для тела и души</p>
+                        <p className={styles.condition__description}>
+                            Ищете активность для тела и души
+                        </p>
                     </div>
                 </div>
             </section>
 
             {/* Направления */}
             {course.directions?.length && (
-                <section className={styles.section}>
-                    <h2 className={styles.section__title}>Направления</h2>
-                    <div className={styles.directions}>
+                <section className={styles.directions}>
+                    <h2 className={styles.title}>Направления</h2>
+
+                    <div className={styles.directions__block}>
                         {course.directions.map((dir, i) => (
                             <div key={i} className={styles.direction}>
-                                ✦ {dir}
+                                <span className={styles.direction__span}>
+                                    ⯌
+                                </span>
+                                <p className={styles.direction__text}>{dir}</p>
                             </div>
                         ))}
                     </div>
@@ -150,6 +226,7 @@ export default function CoursePage() {
                     <h2 className={styles.cta__title}>
                         Начните путь к новому телу
                     </h2>
+
                     <ul className={styles.benefits}>
                         {(
                             course.benefits || [
@@ -167,33 +244,52 @@ export default function CoursePage() {
                     {!user ? (
                         <button
                             onClick={handleAddCourse}
-                            className={`${styles.btn} ${styles.btn__login}`}
+                            className={`${styles.cta__btn} btn-primary`}
                         >
                             Войдите, чтобы добавить курс
                         </button>
                     ) : hasPurchased || isAdded ? (
                         <button
                             disabled
-                            className={`${styles.btn} ${styles.btn__added}`}
+                            className={`${styles.cta__btn} btn-primary`}
                         >
                             Курс уже добавлен ✓
                         </button>
                     ) : (
                         <button
                             onClick={handleAddCourse}
-                            className={`${styles.btn} ${styles.btn__primary}`}
+                            className={`${styles.cta__btn} btn-primary`}
                         >
                             Добавить курс
                         </button>
                     )}
                 </div>
-                <div className={styles.cta__image}>
+
+                <div
+                    className={styles.cta__imagesContainer}
+                    style={{
+                        backgroundImage: `url(/img/runner-vector.png)`,
+                        backgroundSize: "auto 110%",
+                        backgroundPosition: "-470px top",
+                        backgroundRepeat: "no-repeat",
+                    }}
+                >
                     <Image
                         src="/img/runner.png"
                         alt="Бегун"
-                        width={350}
-                        height={400}
+                        width={600}
+                        height={600}
                         priority
+                        className={`${styles.cta__image} ${styles.img1}`}
+                    />
+
+                    <Image
+                        src="/img/runner-blue.png"
+                        alt="Бегун синий фон"
+                        width={479}
+                        height={542}
+                        priority
+                        className={`${styles.cta__image} ${styles.img2}`}
                     />
                 </div>
             </section>
