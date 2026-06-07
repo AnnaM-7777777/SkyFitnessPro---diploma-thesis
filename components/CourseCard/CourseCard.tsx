@@ -55,23 +55,27 @@ export default function CourseCard({ course }: CourseCardProps) {
         }
 
         try {
-            await apiFetch(`/user/courses/${course._id}`, { method: "POST" });
+            // ПРАВИЛЬНЫЙ URL и тело запроса
+            await apiFetch("/users/me/courses", {
+                method: "POST",
+                body: JSON.stringify({ courseId: course._id }),
+            });
+
             setIsAdded(true);
             setToast({
                 message: "Курс успешно добавлен!",
                 type: "success",
             });
             setTimeout(() => setIsAdded(false), 2000);
-        } catch (err) {
+        } catch (err: any) {
             console.error("Ошибка добавления курса:", err);
             setToast({
-                message: "Ошибка при добавлении курса",
+                message: err.message || "Ошибка при добавлении курса",
                 type: "error",
             });
         }
     };
 
-    // 👇 Вынесены НАРУЖУ useEffect
     const handleMouseEnter = () => setShowCustomCursor(true);
     const handleMouseLeave = () => setShowCustomCursor(false);
 

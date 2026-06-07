@@ -1,20 +1,27 @@
 export const API_BASE = 'https://wedev-api.sky.pro/api/fitness';
 
-export async function apiFetch(endpoint: string, options: RequestInit = {}) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('fitness_token') : null;
-  
-  const headers = {
-    'Content-Type': '',
-    ...(token && { Authorization: `Bearer ${token}` }),
-    ...options.headers,
-  };
+export async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('fitness_token') : null;
+    
+    const headers: Record<string, string> = {
+        'Content-Type': '',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
 
-  const res = await fetch(`${API_BASE}${endpoint}`, {
-    ...options,
-    headers,
-  });
-
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message || 'Ошибка запроса');
-  return data;
+    if (options?.headers) {
+        Object.assign(headers, options.headers);
+    }
+    
+    const res = await fetch(`${API_BASE}${endpoint}`, {
+        ...options,
+        headers,
+    });
+    
+    const data = await res.json();
+    
+    if (!res.ok) {
+        throw new Error(data.message || 'Ошибка запроса');
+    }
+    
+    return data as T;
 }

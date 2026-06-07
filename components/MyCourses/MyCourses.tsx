@@ -1,71 +1,112 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/libs/apiConfig";
 import type { Course } from "@/types/course";
 import styles from "./MyCourses.module.css";
 
-type UserCourse = {
-    courseId: string;
-    progress: number; // 0-100
-    addedAt: string;
+type UserData = {
+    email: string;
+    selectedCourses: string[];
 };
 
+type WorkoutProgress = {
+    workoutId: string;
+    workoutCompleted: boolean;
+    progressData: number[];
+};
+
+type CourseProgressData = {
+    courseId: string;
+    courseCompleted: boolean;
+    workoutsProgress: WorkoutProgress[];
+};
+
+type CourseWithProgress = Course & { progress: number };
+
 export default function MyCourses() {
-    const [courses, setCourses] = useState<Course[]>([]);
-    const [userCourses, setUserCourses] = useState<UserCourse[]>([]);
+    const { token } = useAuth();
+    const [courses, setCourses] = useState<CourseWithProgress[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // Загружаем список курсов пользователя из localStorage
     useEffect(() => {
-        const saved = localStorage.getItem("fitness_user_courses");
-        if (saved) {
-            setUserCourses(JSON.parse(saved));
-        }
-        setLoading(false);
-    }, []);
-
-    // Загружаем данные курсов с API
-    useEffect(() => {
-        if (userCourses.length === 0) {
-            setCourses([]);
+        if (!token) {
+            setLoading(false);
             return;
         }
 
-        const fetchCourses = async () => {
+        const fetchMyCourses = async () => {
             try {
-                const courseData = await Promise.all(
-                    userCourses.map(async (uc) => {
-                        const course = await apiFetch(
-                            `/courses/${uc.courseId}`,
+                // 1. Получаем данные пользователя со списком ID курсов
+                const userData = await apiFetch<UserData>("/users/me");
+                const courseIds = userData.selectedCourses || [];
+
+                if (courseIds.length === 0) {
+                    setCourses([]);
+                    setLoading(false);
+                    return;
+                }
+
+                // 2. Для каждого курса загружаем данные и прогресс
+                const coursesData = await Promise.all(
+                    courseIds.map(async (courseId) => {
+                        // Получаем данные курса
+                        const course = await apiFetch<Course>(
+                            `/courses/${courseId}`,
                         );
-                        return { ...course, progress: uc.progress };
+
+                        // Получаем прогресс
+                        let progress = 0;
+                        try {
+                            const progressData =
+                                await apiFetch<CourseProgressData>(
+                                    `/users/me/progress?courseId=${courseId}`,
+                                );
+
+                            if (
+                                progressData.workoutsProgress &&
+                                progressData.workoutsProgress.length > 0
+                            ) {
+                                const completed =
+                                    progressData.workoutsProgress.filter(
+                                        (w) => w.workoutCompleted,
+                                    ).length;
+                                const total =
+                                    progressData.workoutsProgress.length;
+                                progress = Math.round(
+                                    (completed / total) * 100,
+                                );
+                            }
+                        } catch {
+                            progress = 0;
+                        }
+
+                        return { ...course, progress };
                     }),
                 );
-                setCourses(courseData);
+
+                setCourses(coursesData);
             } catch (err) {
                 console.error("Ошибка загрузки курсов:", err);
+            } finally {
+                setLoading(false);
             }
         };
 
-        fetchCourses();
-    }, [userCourses]);
+        fetchMyCourses();
+    }, [token]);
 
-    // Удалить курс
-    const handleRemoveCourse = (courseId: string) => {
-        const updated = userCourses.filter((uc) => uc.courseId !== courseId);
-        setUserCourses(updated);
-        localStorage.setItem("fitness_user_courses", JSON.stringify(updated));
-        setCourses(courses.filter((c) => c._id !== courseId));
-    };
-
-    // Обновить прогресс (заглушка)
-    const handleUpdateProgress = (courseId: string, newProgress: number) => {
-        const updated = userCourses.map((uc) =>
-            uc.courseId === courseId ? { ...uc, progress: newProgress } : uc,
-        );
-        setUserCourses(updated);
-        localStorage.setItem("fitness_user_courses", JSON.stringify(updated));
+    // Удалить курс через API
+    const handleRemoveCourse = async (courseId: string) => {
+        try {
+            await apiFetch<unknown>(`/users/me/courses/${courseId}`, {
+                method: "DELETE",
+            });
+            setCourses(courses.filter((c) => c._id !== courseId));
+        } catch (err) {
+            console.error("Ошибка удаления курса:", err);
+        }
     };
 
     if (loading) {
@@ -86,14 +127,10 @@ export default function MyCourses() {
     return (
         <div className={styles.myCourses}>
             {courses.map((course) => {
-                const userCourse = userCourses.find(
-                    (uc) => uc.courseId === course._id,
-                );
-                const progress = userCourse?.progress || 0;
+                const progress = course.progress || 0;
 
                 return (
                     <div key={course._id} className={styles.courseCard}>
-                        {/* Кнопка удалить */}
                         <button
                             className={styles.courseCard__remove}
                             onClick={() => handleRemoveCourse(course._id)}
@@ -112,17 +149,19 @@ export default function MyCourses() {
                             </svg>
                         </button>
 
-                        {/* Изображение курса */}
                         <div className={styles.courseCard__image}>
                             <Image
-                                src={course.image || "/img/1-yoga-l.png"}
+                                src={
+                                    course.imageBG ||
+                                    course.image ||
+                                    "/img/1-yoga-l.png"
+                                }
                                 alt={course.nameRU || course.title || "Курс"}
                                 fill
                                 style={{ objectFit: "cover" }}
                             />
                         </div>
 
-                        {/* Информация */}
                         <div className={styles.courseCard__info}>
                             <h3 className={styles.courseCard__title}>
                                 {course.nameRU || course.title}
@@ -141,7 +180,6 @@ export default function MyCourses() {
                                 Сложность: {course.difficulty || "Средняя"}
                             </div>
 
-                            {/* Прогресс */}
                             <div className={styles.courseCard__progress}>
                                 <div className={styles.courseCard__progressBar}>
                                     <div
@@ -154,7 +192,6 @@ export default function MyCourses() {
                                 <span>Прогресс: {progress}%</span>
                             </div>
 
-                            {/* Кнопка действия */}
                             <Link
                                 href={`/courses/${course._id}`}
                                 className={`${styles.courseCard__button} btn-primary`}

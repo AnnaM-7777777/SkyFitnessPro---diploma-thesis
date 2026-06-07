@@ -99,10 +99,19 @@ export default function CoursePage() {
             router.push(`/?modal=login`, undefined, { shallow: true });
             return;
         }
+
         try {
-            await apiFetch(`/user/courses/${id}`, { method: "POST" });
+            // Извлекаем courseId из id (может быть массивом)
+            const courseId = Array.isArray(id) ? id[0] : id;
+
+            // ПРАВИЛЬНЫЙ URL и тело запроса
+            await apiFetch("/users/me/courses", {
+                method: "POST",
+                body: JSON.stringify({ courseId }),
+            });
+
             setIsAdded(true);
-        } catch (err) {
+        } catch (err: any) {
             console.error("Ошибка добавления курса:", err);
         }
     };
