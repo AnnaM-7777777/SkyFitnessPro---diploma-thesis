@@ -26,6 +26,7 @@ export interface Course {
     requirements?: string[];
     instructor?: string;
     level?: "beginner" | "intermediate" | "advanced";
+    difficulty?: string;
 }
 
 export interface MockCourses extends Course {
