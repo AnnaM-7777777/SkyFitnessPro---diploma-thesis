@@ -9,6 +9,11 @@ import styles from "./CoursePage.module.css";
 import Image from "next/image";
 import Link from "next/link";
 
+type UserData = {
+    email: string;
+    selectedCourses: string[];
+};
+
 // Определяем тему по названию курса
 const getCourseThemeByTitle = (title: string) => {
     const lowerTitle = title.toLowerCase();
@@ -65,11 +70,12 @@ const getCourseThemeByTitle = (title: string) => {
 export default function CoursePage() {
     const router = useRouter();
     const { id } = router.query;
-    const { user } = useAuth();
+    const { user, token } = useAuth();
     const [course, setCourse] = useState<Course | null>(null);
     const [loading, setLoading] = useState(true);
     const [isAdded, setIsAdded] = useState(false);
 
+    // 1. Загрузка данных курса
     useEffect(() => {
         if (!id) return;
 
@@ -92,26 +98,54 @@ export default function CoursePage() {
         fetchCourse();
     }, [id]);
 
-    const hasPurchased = false;
+    // 2. ПРОВЕРКА: Добавлен ли курс при загрузке страницы (чтобы после F5 кнопка не сбрасывалась)
+    useEffect(() => {
+        if (!token || !id) return;
 
+        const courseId = Array.isArray(id) ? id[0] : id;
+
+        const checkIfAdded = async () => {
+            try {
+                const response = await apiFetch<{ user: UserData }>(
+                    "/users/me",
+                );
+                const userData = response.user;
+                const isCourseAdded =
+                    userData.selectedCourses?.includes(courseId);
+                setIsAdded(isCourseAdded || false);
+            } catch (err) {
+                console.error("Ошибка проверки курса:", err);
+            }
+        };
+
+        checkIfAdded();
+    }, [token, id]);
+
+    // 3. Добавление курса
     const handleAddCourse = async () => {
         if (!user) {
             router.push(`/?modal=login`, undefined, { shallow: true });
             return;
         }
 
-        try {
-            // Извлекаем courseId из id (может быть массивом)
-            const courseId = Array.isArray(id) ? id[0] : id;
+        const courseId = Array.isArray(id) ? id[0] : id;
 
-            // ПРАВИЛЬНЫЙ URL и тело запроса
+        try {
             await apiFetch("/users/me/courses", {
                 method: "POST",
                 body: JSON.stringify({ courseId }),
             });
 
-            setIsAdded(true);
-        } catch (err: any) {
+            setIsAdded(true); // Мгновенно меняем состояние кнопки
+        } catch (err: unknown) {
+            // Если сервер говорит, что курс уже добавлен — просто ставим состояние true
+            if (
+                err instanceof Error &&
+                err.message.includes("уже был добавлен")
+            ) {
+                setIsAdded(true);
+                return;
+            }
             console.error("Ошибка добавления курса:", err);
         }
     };
@@ -139,9 +173,7 @@ export default function CoursePage() {
 
     const title = course.nameRU || course.title || course.name || "Курс";
 
-    // Получаем ID курса и определяем тему
     const currentCourseId = Array.isArray(id) ? id[0] : id || "";
-    console.log("🔍 ID курса:", currentCourseId);
     const {
         image: courseImage,
         color: courseColor,
@@ -153,7 +185,7 @@ export default function CoursePage() {
         <div className={styles.page}>
             <Header />
 
-            {/* Шапка курса — с динамическим фоном и картинкой */}
+            {/* Шапка курса */}
             <section
                 className={styles.header}
                 style={{ backgroundColor: courseColor }}
@@ -257,7 +289,7 @@ export default function CoursePage() {
                         >
                             Войдите, чтобы добавить курс
                         </button>
-                    ) : hasPurchased || isAdded ? (
+                    ) : isAdded ? (
                         <button
                             disabled
                             className={`${styles.cta__btn} btn-primary`}

@@ -12,6 +12,7 @@ interface CourseCardProps {
     course: Course;
 }
 
+// Тип теперь описывает вложенность, как возвращает сервер
 type UserData = {
     email: string;
     selectedCourses: string[];
@@ -51,7 +52,7 @@ export default function CourseCard({ course }: CourseCardProps) {
         COURSE_IMAGES[title.split(" ")[0]] ||
         "/img/1-yoga-l.png";
 
-    // Проверяем, добавлен ли курс при загрузке
+    // Правильно читаем вложенный объект user
     useEffect(() => {
         if (!token) {
             setLoading(false);
@@ -60,7 +61,12 @@ export default function CourseCard({ course }: CourseCardProps) {
 
         const checkIfAdded = async () => {
             try {
-                const userData = await apiFetch<UserData>("/users/me");
+                // Сервер возвращает { user: { email, selectedCourses } }
+                const response = await apiFetch<{ user: UserData }>(
+                    "/users/me",
+                );
+                const userData = response.user;
+
                 const isCourseAdded = userData.selectedCourses?.includes(
                     course._id,
                 );
@@ -91,14 +97,13 @@ export default function CourseCard({ course }: CourseCardProps) {
                 body: JSON.stringify({ courseId: course._id }),
             });
 
-            setIsAdded(true);
+            setIsAdded(true); // Мгновенно меняем кнопку на "-"
             setToast({
                 message: "Курс успешно добавлен!",
                 type: "success",
             });
             setTimeout(() => setToast(null), 2000);
         } catch (err: unknown) {
-            // Если курс уже добавлен — просто переключаем состояние
             if (
                 err instanceof Error &&
                 err.message.includes("уже был добавлен")
@@ -128,7 +133,7 @@ export default function CourseCard({ course }: CourseCardProps) {
                 method: "DELETE",
             });
 
-            setIsAdded(false);
+            setIsAdded(false); // Мгновенно меняем кнопку на "+"
             setToast({
                 message: "Курс удалён из профиля",
                 type: "success",

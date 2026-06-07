@@ -14,10 +14,6 @@ export default function ProfilePage() {
             <h2 className={styles.profilePage__title}>Мои курсы</h2>
 
             <MyCourses />
-
-            <section className={styles.myCourses}>
-                
-            </section>
         </div>
     );
 }

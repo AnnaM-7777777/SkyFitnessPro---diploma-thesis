@@ -147,8 +147,9 @@ export default function MyCourses() {
     if (courses.length === 0) {
         return (
             <div className={styles.empty}>
-                <p>У вас пока нет добавленных курсов</p>
-                <Link href="/" className="btn-primary">
+                <p className={styles.empty__text}>У вас пока нет добавленных курсов</p>
+
+                <Link href="/" className={`${styles.empty__btn} btn-primary`}>
                     Выбрать курс
                 </Link>
             </div>
@@ -253,16 +254,17 @@ export default function MyCourses() {
                                 </span>
 
                                 {/* Прогресс */}
-                                <div className={styles.progressBlock}>
+                                <div className={styles.progressBlock}>                                    
+                                    <span className={styles.progressText}>
+                                        Прогресс: {progress}%
+                                    </span>
+                                    
                                     <div className={styles.progressBar}>
                                         <div
                                             className={styles.progressFill}
                                             style={{ width: `${progress}%` }}
                                         />
                                     </div>
-                                    <span className={styles.progressText}>
-                                        Прогресс: {progress}%
-                                    </span>
                                 </div>
 
                                 {/* Кнопка "Начать тренировки" */}
