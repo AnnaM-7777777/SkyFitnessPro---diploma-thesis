@@ -118,7 +118,7 @@ export default function Header() {
                                 </div>
 
                                 <Link
-                                    href="/profile"
+                                    href="/profile/profile"
                                     className={`${styles.header__menuButton} btn-primary`}
                                     onClick={() => setIsMenuOpen(false)}
                                 >
