@@ -12,6 +12,11 @@ interface CourseCardProps {
     course: Course;
 }
 
+type UserData = {
+    email: string;
+    selectedCourses: string[];
+};
+
 const COURSE_IMAGES: Record<string, string> = {
     Йога: "/img/1-yoga-l.png",
     Стретчинг: "/img/2-stretching-l.png",
@@ -27,8 +32,9 @@ const COURSE_IMAGES: Record<string, string> = {
 
 export default function CourseCard({ course }: CourseCardProps) {
     const router = useRouter();
-    const { user } = useAuth();
+    const { user, token } = useAuth();
     const [isAdded, setIsAdded] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [toast, setToast] = useState<{
         message: string;
         type: "error" | "success";
@@ -45,6 +51,31 @@ export default function CourseCard({ course }: CourseCardProps) {
         COURSE_IMAGES[title.split(" ")[0]] ||
         "/img/1-yoga-l.png";
 
+    // Проверяем, добавлен ли курс при загрузке
+    useEffect(() => {
+        if (!token) {
+            setLoading(false);
+            return;
+        }
+
+        const checkIfAdded = async () => {
+            try {
+                const userData = await apiFetch<UserData>("/users/me");
+                const isCourseAdded = userData.selectedCourses?.includes(
+                    course._id,
+                );
+                setIsAdded(isCourseAdded || false);
+            } catch (err) {
+                console.error("Ошибка проверки курса:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        checkIfAdded();
+    }, [token, course._id]);
+
+    // Добавление курса
     const handleAddCourse = async () => {
         if (!user) {
             setToast({
@@ -55,7 +86,6 @@ export default function CourseCard({ course }: CourseCardProps) {
         }
 
         try {
-            // ПРАВИЛЬНЫЙ URL и тело запроса
             await apiFetch("/users/me/courses", {
                 method: "POST",
                 body: JSON.stringify({ courseId: course._id }),
@@ -66,20 +96,69 @@ export default function CourseCard({ course }: CourseCardProps) {
                 message: "Курс успешно добавлен!",
                 type: "success",
             });
-            setTimeout(() => setIsAdded(false), 2000);
-        } catch (err: any) {
+            setTimeout(() => setToast(null), 2000);
+        } catch (err: unknown) {
+            // Если курс уже добавлен — просто переключаем состояние
+            if (
+                err instanceof Error &&
+                err.message.includes("уже был добавлен")
+            ) {
+                setIsAdded(true);
+                return;
+            }
+
             console.error("Ошибка добавления курса:", err);
             setToast({
-                message: err.message || "Ошибка при добавлении курса",
+                message:
+                    err instanceof Error
+                        ? err.message
+                        : "Ошибка при добавлении курса",
                 type: "error",
             });
+            setTimeout(() => setToast(null), 2000);
+        }
+    };
+
+    // Удаление курса
+    const handleRemoveCourse = async () => {
+        if (!user) return;
+
+        try {
+            await apiFetch(`/users/me/courses/${course._id}`, {
+                method: "DELETE",
+            });
+
+            setIsAdded(false);
+            setToast({
+                message: "Курс удалён из профиля",
+                type: "success",
+            });
+            setTimeout(() => setToast(null), 2000);
+        } catch (err: unknown) {
+            console.error("Ошибка удаления курса:", err);
+            setToast({
+                message:
+                    err instanceof Error
+                        ? err.message
+                        : "Ошибка при удалении курса",
+                type: "error",
+            });
+            setTimeout(() => setToast(null), 2000);
+        }
+    };
+
+    // Обработчик клика — переключение
+    const handleToggleCourse = () => {
+        if (isAdded) {
+            handleRemoveCourse();
+        } else {
+            handleAddCourse();
         }
     };
 
     const handleMouseEnter = () => setShowCustomCursor(true);
     const handleMouseLeave = () => setShowCustomCursor(false);
 
-    // Глобальное отслеживание мыши для кастомного курсора
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
             setCursorPos({
@@ -107,15 +186,19 @@ export default function CourseCard({ course }: CourseCardProps) {
 
                     <button
                         className={styles.cards__btnAddCourse}
-                        aria-label="Добавить курс"
-                        onClick={handleAddCourse}
-                        disabled={isAdded}
+                        aria-label={isAdded ? "Удалить курс" : "Добавить курс"}
+                        onClick={handleToggleCourse}
+                        disabled={loading || !user}
                         onMouseEnter={handleMouseEnter}
                         onMouseLeave={handleMouseLeave}
                     >
                         <Image
-                            src="/img/btnAddIcon.png"
-                            alt="add"
+                            src={
+                                isAdded
+                                    ? "/img/btnDelIcon.png"
+                                    : "/img/btnAddIcon.png"
+                            }
+                            alt={isAdded ? "remove" : "add"}
                             width={27}
                             height={27}
                             priority
@@ -184,7 +267,9 @@ export default function CourseCard({ course }: CourseCardProps) {
                     />
                 </div>
 
-                <div className={styles.customCursor__text}>Добавить курс</div>
+                <div className={styles.customCursor__text}>
+                    {isAdded ? "Удалить курс" : "Добавить курс"}
+                </div>
             </div>
 
             {/* Toast-уведомление */}
