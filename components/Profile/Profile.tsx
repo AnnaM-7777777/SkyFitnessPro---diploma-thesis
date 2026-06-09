@@ -35,30 +35,21 @@ export default function Profile() {
         <div className={styles.profile}>
             {/* Аватар пользователя */}
             <div className={styles.profile__avatar}>
-                {user.imageUrl ? (
-                    // Внешний URL — обычный <img> с onError
-                    <img
-                        src={user.imageUrl}
-                        alt={userName}
-                        width={197}
-                        height={197}
-                        style={{ objectFit: "cover" }}
-                        onError={(e) => {
-                            (e.target as HTMLImageElement).src =
-                                "/img/avatar.png";
-                        }}
-                    />
-                ) : (
-                    // Локальный файл — Next.js <Image>
-                    <Image
-                        src="/img/avatar.png"
-                        alt="Аватар по умолчанию"
-                        width={197}
-                        height={197}
-                        priority
-                        style={{ objectFit: "cover" }}
-                    />
-                )}
+                <Image
+                    src={
+                        user.imageUrl &&
+                        !user.imageUrl.includes("yandexcloud") &&
+                        !user.imageUrl.includes("skypro")
+                            ? user.imageUrl
+                            : "/img/avatar.png"
+                    }
+                    alt={userName}
+                    width={197}
+                    height={197}
+                    priority
+                    style={{ objectFit: "cover" }}
+                    unoptimized
+                />
             </div>
 
             <div className={styles.profile__userInfo}>

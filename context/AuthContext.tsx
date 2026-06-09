@@ -30,6 +30,22 @@ type AuthContextType = {
     isLoading: boolean;
 };
 
+// Функция проверки пароля по требованиям фитнес-API
+const validateFitnessPassword = (password: string): string | null => {
+    if (password.length < 6)
+        return "Пароль должен содержать минимум 6 символов";
+    if (!/[A-ZА-ЯЁ]/.test(password))
+        return "Пароль должен содержать хотя бы одну заглавную букву";
+
+    // Считаем спецсимволы
+    const specialChars = password.match(/[^a-zA-Z0-9а-яА-ЯёЁ\s]/g);
+    if (!specialChars || specialChars.length < 2) {
+        return "Пароль должен содержать минимум 2 спецсимвола (например: @!#?)";
+    }
+
+    return null; // Ошибок нет
+};
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -87,6 +103,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const register = async (email: string, password: string, name?: string) => {
+        // Проверяем пароль перед отправкой
+        const passwordError = validateFitnessPassword(password);
+        if (passwordError) {
+            throw new Error(passwordError); // Покажем это пользователю в Toast
+        }
+
         try {
             // 1. Регистрация в основном API
             const authUser: AuthUser = await authRegister({

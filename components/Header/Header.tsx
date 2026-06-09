@@ -68,14 +68,36 @@ export default function Header() {
                             aria-label="Меню профиля"
                         >
                             {/* Универсальная иконка аватара */}
+                            {/* Стало */}
                             <div className={styles.header__userAvatar}>
-                                <Image
-                                    src="/img/icon.png"
-                                    alt="add"
-                                    width={42}
-                                    height={42}
-                                    priority
-                                />
+                                {user.imageUrl &&
+                                !user.imageUrl.includes("yandexcloud") ? (
+                                    <Image
+                                        src={user.imageUrl}
+                                        alt={user.name || "Аватар"}
+                                        width={42}
+                                        height={42}
+                                        style={{
+                                            objectFit: "cover",
+                                            borderRadius: "50%",
+                                        }}
+                                        onError={() => {
+                                            // Если не загрузилось — ничего не делаем, Next.js сам покажет placeholder
+                                        }}
+                                    />
+                                ) : (
+                                    <Image
+                                        src="/img/icon.png"
+                                        alt="Аватар"
+                                        width={42}
+                                        height={42}
+                                        priority
+                                        style={{
+                                            objectFit: "cover",
+                                            borderRadius: "50%",
+                                        }}
+                                    />
+                                )}
                             </div>
 
                             {/* Имя пользователя */}
