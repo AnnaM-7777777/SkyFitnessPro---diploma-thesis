@@ -6,6 +6,7 @@ import { apiFetch } from "@/libs/apiConfig";
 import type { Course } from "@/types/course";
 import courseStyles from "@/components/CourseCard/CourseCard.module.css";
 import styles from "./MyCourses.module.css";
+import WorkoutSelectionModal from "@/components/WorkoutSelectionModal/WorkoutSelectionModal";
 
 type UserData = {
     email: string;
@@ -45,6 +46,16 @@ export default function MyCourses() {
     const [loading, setLoading] = useState(true);
     const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
     const [showCustomCursor, setShowCustomCursor] = useState(false);
+    const [showWorkoutModal, setShowWorkoutModal] = useState(false);
+    const [selectedCourseId, setSelectedCourseId] = useState<string | null>(
+        null,
+    );
+
+    // Обработчик кнопки:
+    const handleStartTraining = (courseId: string) => {
+        setSelectedCourseId(courseId);
+        setShowWorkoutModal(true);
+    };
 
     useEffect(() => {
         if (!token) {
@@ -56,7 +67,7 @@ export default function MyCourses() {
             try {
                 setLoading(true);
 
-                // ✅ Проверяем кэш для списка курсов пользователя
+                // Проверяем кэш для списка курсов пользователя
                 const cachedUser = sessionStorage.getItem("user_data_cache");
                 let selectedCourses: string[] = [];
 
@@ -65,9 +76,6 @@ export default function MyCourses() {
                     // Кэш действителен 30 секунд
                     if (Date.now() - timestamp < 30000) {
                         selectedCourses = data;
-                        console.log(
-                            "✅ Используем кэш для курсов пользователя",
-                        );
                     } else {
                         // Кэш устарел
                         const response = await apiFetch<{ user: UserData }>(
@@ -102,7 +110,7 @@ export default function MyCourses() {
                     return;
                 }
 
-                // ✅ Загружаем данные курсов с задержкой, чтобы не перегружать сервер
+                // Загружаем данные курсов с задержкой, чтобы не перегружать сервер
                 const coursesData = [];
                 for (const courseId of selectedCourses) {
                     try {
@@ -151,7 +159,7 @@ export default function MyCourses() {
 
                         coursesData.push(course);
 
-                        // ✅ Задержка 100мс между запросами
+                        // Задержка 100мс между запросами
                         await new Promise((resolve) =>
                             setTimeout(resolve, 100),
                         );
@@ -331,16 +339,18 @@ export default function MyCourses() {
                                 </div>
 
                                 {/* Кнопка "Начать тренировки" */}
-                                <Link
-                                    href={`/courses/${course._id}`}
+                                <button
                                     className={`${styles.startButton} btn-primary`}
+                                    onClick={() =>
+                                        handleStartTraining(course._id)
+                                    }
                                 >
                                     {progress === 0
                                         ? "Начать тренировки"
                                         : progress >= 100
                                           ? "Начать снова"
                                           : "Продолжить"}
-                                </Link>
+                                </button>
                             </div>
                         </article>
                     );
@@ -365,6 +375,17 @@ export default function MyCourses() {
 
                 <div className={styles.customCursor__text}>Удалить курс</div>
             </div>
+
+            {/* Модалка выбора тренировки — один раз в самом конце */}
+            {showWorkoutModal && selectedCourseId && (
+                <WorkoutSelectionModal
+                    courseId={selectedCourseId}
+                    onClose={() => {
+                        setShowWorkoutModal(false);
+                        setSelectedCourseId(null);
+                    }}
+                />
+            )}
         </>
     );
 }
