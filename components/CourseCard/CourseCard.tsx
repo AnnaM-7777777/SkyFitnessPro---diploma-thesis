@@ -61,15 +61,41 @@ export default function CourseCard({ course }: CourseCardProps) {
 
         const checkIfAdded = async () => {
             try {
-                // Сервер возвращает { user: { email, selectedCourses } }
-                const response = await apiFetch<{ user: UserData }>(
-                    "/users/me",
-                );
-                const userData = response.user;
+                const cachedData = sessionStorage.getItem("user_data_cache");
+                let selectedCourses: string[] = [];
 
-                const isCourseAdded = userData.selectedCourses?.includes(
-                    course._id,
-                );
+                if (cachedData) {
+                    const { data, timestamp } = JSON.parse(cachedData);
+                    if (Date.now() - timestamp < 30000) {
+                        selectedCourses = data;
+                    } else {
+                        const response = await apiFetch<{ user: UserData }>(
+                            "/users/me",
+                        );
+                        selectedCourses = response.user.selectedCourses || [];
+                        sessionStorage.setItem(
+                            "user_data_cache",
+                            JSON.stringify({
+                                data: selectedCourses,
+                                timestamp: Date.now(),
+                            }),
+                        );
+                    }
+                } else {
+                    const response = await apiFetch<{ user: UserData }>(
+                        "/users/me",
+                    );
+                    selectedCourses = response.user.selectedCourses || [];
+                    sessionStorage.setItem(
+                        "user_data_cache",
+                        JSON.stringify({
+                            data: selectedCourses,
+                            timestamp: Date.now(),
+                        }),
+                    );
+                }
+
+                const isCourseAdded = selectedCourses.includes(course._id);
                 setIsAdded(isCourseAdded || false);
             } catch (err) {
                 console.error("Ошибка проверки курса:", err);
@@ -98,6 +124,9 @@ export default function CourseCard({ course }: CourseCardProps) {
             });
 
             setIsAdded(true); // Мгновенно меняем кнопку на "-"
+
+            sessionStorage.removeItem("user_data_cache"); // Очищаем кэш
+
             setToast({
                 message: "Курс успешно добавлен!",
                 type: "success",
@@ -109,6 +138,9 @@ export default function CourseCard({ course }: CourseCardProps) {
                 err.message.includes("уже был добавлен")
             ) {
                 setIsAdded(true);
+                
+                sessionStorage.removeItem("user_data_cache"); // Очищаем кэш
+
                 return;
             }
 
@@ -134,6 +166,9 @@ export default function CourseCard({ course }: CourseCardProps) {
             });
 
             setIsAdded(false); // Мгновенно меняем кнопку на "+"
+
+            sessionStorage.removeItem("user_data_cache");
+            
             setToast({
                 message: "Курс удалён из профиля",
                 type: "success",

@@ -54,56 +54,117 @@ export default function MyCourses() {
 
         const fetchMyCourses = async () => {
             try {
-                const response = await apiFetch<{ user: UserData }>(
-                    "/users/me",
-                );
-                const userData = response.user;
+                setLoading(true);
 
-                const courseIds = userData.selectedCourses || [];
+                // ✅ Проверяем кэш для списка курсов пользователя
+                const cachedUser = sessionStorage.getItem("user_data_cache");
+                let selectedCourses: string[] = [];
 
-                if (courseIds.length === 0) {
+                if (cachedUser) {
+                    const { data, timestamp } = JSON.parse(cachedUser);
+                    // Кэш действителен 30 секунд
+                    if (Date.now() - timestamp < 30000) {
+                        selectedCourses = data;
+                        console.log(
+                            "✅ Используем кэш для курсов пользователя",
+                        );
+                    } else {
+                        // Кэш устарел
+                        const response = await apiFetch<{ user: UserData }>(
+                            "/users/me",
+                        );
+                        selectedCourses = response.user.selectedCourses || [];
+                        sessionStorage.setItem(
+                            "user_data_cache",
+                            JSON.stringify({
+                                data: selectedCourses,
+                                timestamp: Date.now(),
+                            }),
+                        );
+                    }
+                } else {
+                    // Кэша нет
+                    const response = await apiFetch<{ user: UserData }>(
+                        "/users/me",
+                    );
+                    selectedCourses = response.user.selectedCourses || [];
+                    sessionStorage.setItem(
+                        "user_data_cache",
+                        JSON.stringify({
+                            data: selectedCourses,
+                            timestamp: Date.now(),
+                        }),
+                    );
+                }
+
+                if (!selectedCourses || selectedCourses.length === 0) {
                     setCourses([]);
-                    setLoading(false);
                     return;
                 }
 
-                const coursesData = await Promise.all(
-                    courseIds.map(async (courseId) => {
-                        const course = await apiFetch<Course>(
-                            `/courses/${courseId}`,
+                // ✅ Загружаем данные курсов с задержкой, чтобы не перегружать сервер
+                const coursesData = [];
+                for (const courseId of selectedCourses) {
+                    try {
+                        // Проверяем кэш для конкретного курса
+                        const cachedCourse = sessionStorage.getItem(
+                            `course_${courseId}`,
                         );
+                        let course;
 
-                        let progress = 0;
-                        try {
-                            const progressData =
-                                await apiFetch<CourseProgressData>(
-                                    `/users/me/progress?courseId=${courseId}`,
+                        if (cachedCourse) {
+                            const { data, timestamp } =
+                                JSON.parse(cachedCourse);
+                            if (Date.now() - timestamp < 60000) {
+                                // Кэш действителен 60 секунд
+                                course = data;
+                            } else {
+                                course = await apiFetch<Course>(
+                                    `/courses/${courseId}`,
                                 );
-
-                            if (
-                                progressData.workoutsProgress &&
-                                progressData.workoutsProgress.length > 0
-                            ) {
-                                const completed =
-                                    progressData.workoutsProgress.filter(
-                                        (w) => w.workoutCompleted,
-                                    ).length;
-                                const total =
-                                    progressData.workoutsProgress.length;
-                                progress = Math.round(
-                                    (completed / total) * 100,
+                                sessionStorage.setItem(
+                                    `course_${courseId}`,
+                                    JSON.stringify({
+                                        data: course,
+                                        timestamp: Date.now(),
+                                    }),
                                 );
                             }
-                        } catch {
-                            progress = 0;
+                        } else {
+                            course = await apiFetch<Course>(
+                                `/courses/${courseId}`,
+                            );
+                            sessionStorage.setItem(
+                                `course_${courseId}`,
+                                JSON.stringify({
+                                    data: course,
+                                    timestamp: Date.now(),
+                                }),
+                            );
                         }
 
-                        return { ...course, progress };
-                    }),
-                );
+                        // Получаем прогресс
+                        const progressResponse = await apiFetch<{
+                            progress: number;
+                        }>(`/users/me/progress?courseId=${courseId}`);
+                        course.progress = progressResponse.progress || 0;
+
+                        coursesData.push(course);
+
+                        // ✅ Задержка 100мс между запросами
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, 100),
+                        );
+                    } catch (err) {
+                        console.error(
+                            `Ошибка загрузки курса ${courseId}:`,
+                            err,
+                        );
+                    }
+                }
 
                 setCourses(coursesData);
-            } catch (err) {
+            } catch (err: unknown) {
                 console.error("Ошибка загрузки курсов:", err);
             } finally {
                 setLoading(false);
@@ -147,7 +208,9 @@ export default function MyCourses() {
     if (courses.length === 0) {
         return (
             <div className={styles.empty}>
-                <p className={styles.empty__text}>У вас пока нет добавленных курсов</p>
+                <p className={styles.empty__text}>
+                    У вас пока нет добавленных курсов
+                </p>
 
                 <Link href="/" className={`${styles.empty__btn} btn-primary`}>
                     Выбрать курс
@@ -254,11 +317,11 @@ export default function MyCourses() {
                                 </span>
 
                                 {/* Прогресс */}
-                                <div className={styles.progressBlock}>                                    
+                                <div className={styles.progressBlock}>
                                     <span className={styles.progressText}>
                                         Прогресс: {progress}%
                                     </span>
-                                    
+
                                     <div className={styles.progressBar}>
                                         <div
                                             className={styles.progressFill}

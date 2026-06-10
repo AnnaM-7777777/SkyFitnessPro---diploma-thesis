@@ -33,7 +33,6 @@ export default function Profile() {
 
     return (
         <div className={styles.profile}>
-            {/* Аватар пользователя */}
             <div className={styles.profile__avatar}>
                 <Image
                     src={
@@ -53,13 +52,8 @@ export default function Profile() {
             </div>
 
             <div className={styles.profile__userInfo}>
-                {/* Имя пользователя */}
                 <h2 className={styles.profile__name}>{userName}</h2>
-
-                {/* Логин/Email */}
                 <p className={styles.profile__login}>Логин: {userLogin}</p>
-
-                {/* Кнопка выхода */}
                 <button
                     className={`${styles.profile__logout} btn-secondary`}
                     onClick={handleLogout}
