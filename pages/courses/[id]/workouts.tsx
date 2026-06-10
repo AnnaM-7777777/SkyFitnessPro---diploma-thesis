@@ -34,7 +34,8 @@ export default function WorkoutsPage() {
     const { id: courseId, selected } = router.query;
     const [workouts, setWorkouts] = useState<WorkoutWithProgress[]>([]);
     const [loading, setLoading] = useState(true);
-    const [activeWorkout, setActiveWorkout] = useState<Workout | null>(null);
+    const [activeWorkout, setActiveWorkout] =
+        useState<WorkoutWithProgress | null>(null);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const selectedRef = useRef<HTMLDivElement | null>(null);
     const hasLoaded = useRef(false);
@@ -165,7 +166,26 @@ export default function WorkoutsPage() {
                 const data = await apiFetch<Workout[]>(
                     `/courses/${courseId}/workouts`,
                 );
-                await loadProgressForAllWorkouts(data, courseId as string);
+
+                // Применяем фильтрацию из sessionStorage
+                const selectedWorkoutsJson = sessionStorage.getItem(
+                    `selected_workouts_${courseId}`,
+                );
+
+                let workoutsToUse = data;
+
+                if (selectedWorkoutsJson) {
+                    const selectedIds: string[] =
+                        JSON.parse(selectedWorkoutsJson);
+                    workoutsToUse = data.filter((w) =>
+                        selectedIds.includes(w._id),
+                    );
+                }
+
+                await loadProgressForAllWorkouts(
+                    workoutsToUse,
+                    courseId as string,
+                );
             }
         }, 1500);
     };
@@ -312,14 +332,22 @@ export default function WorkoutsPage() {
                     courseId={courseId as string}
                     workoutId={activeWorkout._id}
                     exercises={activeWorkout.exercises}
+                    initialProgress={
+                        activeWorkout.exerciseProgress
+                            ? activeWorkout.exercises.map((exercise, index) => {
+                                  const progress =
+                                      activeWorkout.exerciseProgress?.[index]
+                                          ?.progress || 0;
+                                  // Пересчитываем процент обратно в количество
+                                  return Math.round(
+                                      (progress / 100) * exercise.quantity,
+                                  );
+                              })
+                            : undefined
+                    }
                     onClose={() => setActiveWorkout(null)}
                     onSuccess={handleProgressSaved}
                 />
-            )}
-
-            {/* Модалка успеха */}
-            {showSuccessModal && (
-                <SuccessModal onClose={() => setShowSuccessModal(false)} />
             )}
         </div>
     );

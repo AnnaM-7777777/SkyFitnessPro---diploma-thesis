@@ -11,7 +11,8 @@ interface Exercise {
 interface ProgressModalProps {
     courseId: string;
     workoutId: string;
-    exercises: Exercise[];
+    exercises: Exercise[];    
+    initialProgress?: number[]; 
     onClose: () => void;
     onSuccess: () => void;
 }
@@ -20,12 +21,13 @@ export default function ProgressModal({
     courseId,
     workoutId,
     exercises,
+    initialProgress,
     onClose,
     onSuccess,
 }: ProgressModalProps) {
     // Инициализируем массив прогресса нулями
     const [progressData, setProgressData] = useState<number[]>(
-        exercises.map(() => 0),
+        initialProgress || exercises.map(() => 0),
     );
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);

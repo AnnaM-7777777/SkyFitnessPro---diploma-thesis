@@ -56,14 +56,31 @@ export default function MyCourses() {
     // Обработчик кнопки:
     const handleStartTraining = async (courseId: string, progress: number) => {
         if (progress >= 100) {
-            // Если прогресс 100% — сбрасываем
             if (confirm("Сбросить весь прогресс по курсу и начать сначала?")) {
                 try {
                     await apiFetch(`/courses/${courseId}/reset`, {
                         method: "PATCH",
                     });
-                    // Перезагружаем для обновления прогресса
-                    window.location.reload();
+
+                    // Очищаем кэш для этого курса
+                    sessionStorage.removeItem(`course_${courseId}`);
+
+                    // Перезагружаем прогресс для этого курса
+                    const progressResponse = await apiFetch<{
+                        progress: number;
+                    }>(`/users/me/progress?courseId=${courseId}`);
+
+                    // Обновляем прогресс в state
+                    setCourses((prevCourses) =>
+                        prevCourses.map((course) =>
+                            course._id === courseId
+                                ? {
+                                      ...course,
+                                      progress: progressResponse.progress || 0,
+                                  }
+                                : course,
+                        ),
+                    );
                 } catch (err) {
                     console.error("Ошибка сброса прогресса:", err);
                     alert("Не удалось сбросить прогресс");
