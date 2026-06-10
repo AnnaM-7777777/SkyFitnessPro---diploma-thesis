@@ -27,7 +27,7 @@ export default function WorkoutSelectionModal({
     const router = useRouter();
     const [workouts, setWorkouts] = useState<Workout[]>([]);
     const [loading, setLoading] = useState(true);
-    // ✅ Массив выбранных ID вместо одного
+    // Массив выбранных ID вместо одного
     const [selectedWorkouts, setSelectedWorkouts] = useState<string[]>([]);
 
     useEffect(() => {
@@ -57,6 +57,18 @@ export default function WorkoutSelectionModal({
 
     const handleStart = () => {
         if (selectedWorkouts.length > 0) {
+            console.log("✅ Выбранные тренировки:", selectedWorkouts);
+
+            sessionStorage.setItem(
+                `selected_workouts_${courseId}`,
+                JSON.stringify(selectedWorkouts),
+            );
+
+            console.log(
+                "💾 Сохранено в sessionStorage:",
+                sessionStorage.getItem(`selected_workouts_${courseId}`),
+            );
+
             router.push(`/courses/${courseId}/workouts`);
             onClose();
         }

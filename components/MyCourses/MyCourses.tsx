@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
@@ -42,6 +43,7 @@ const COURSE_IMAGES: Record<string, string> = {
 
 export default function MyCourses() {
     const { token } = useAuth();
+    const router = useRouter();
     const [courses, setCourses] = useState<CourseWithProgress[]>([]);
     const [loading, setLoading] = useState(true);
     const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
@@ -52,9 +54,72 @@ export default function MyCourses() {
     );
 
     // Обработчик кнопки:
-    const handleStartTraining = (courseId: string) => {
-        setSelectedCourseId(courseId);
-        setShowWorkoutModal(true);
+    const handleStartTraining = async (courseId: string, progress: number) => {
+        if (progress >= 100) {
+            // Если прогресс 100% — сбрасываем
+            if (confirm("Сбросить весь прогресс по курсу и начать сначала?")) {
+                try {
+                    await apiFetch(`/courses/${courseId}/reset`, {
+                        method: "PATCH",
+                    });
+                    // Перезагружаем для обновления прогресса
+                    window.location.reload();
+                } catch (err) {
+                    console.error("Ошибка сброса прогресса:", err);
+                    alert("Не удалось сбросить прогресс");
+                }
+            }
+        } else if (progress > 0) {
+            // Если есть прогресс — открываем следующую незавершённую тренировку
+            await openNextIncompleteWorkout(courseId);
+        } else {
+            // Если прогресс 0% — открываем модалку выбора
+            setSelectedCourseId(courseId);
+            setShowWorkoutModal(true);
+        }
+    };
+
+    // Функция для открытия следующей незавершённой тренировки
+    const openNextIncompleteWorkout = async (courseId: string) => {
+        try {
+            // Получаем все тренировки курса
+            const workouts = await apiFetch<
+                Array<{ _id: string; name: string }>
+            >(`/courses/${courseId}/workouts`);
+
+            // Получаем прогресс по всем тренировкам
+            const progressData = await apiFetch<{
+                workoutsProgress: Array<{
+                    workoutId: string;
+                    workoutCompleted: boolean;
+                }>;
+            }>(`/users/me/progress?courseId=${courseId}`);
+
+            // Находим первую незавершённую тренировку
+            const incompleteWorkout = workouts.find((workout) => {
+                const workoutProgress = progressData.workoutsProgress.find(
+                    (wp) => wp.workoutId === workout._id,
+                );
+                return !workoutProgress?.workoutCompleted;
+            });
+
+            if (incompleteWorkout) {
+                // Открываем найденную тренировку
+                router.push(
+                    `/courses/${courseId}/workouts?selected=${incompleteWorkout._id}`,
+                );
+            } else {
+                // Если все завершены — открываем первую
+                router.push(
+                    `/courses/${courseId}/workouts?selected=${workouts[0]?._id}`,
+                );
+            }
+        } catch (err) {
+            console.error("Ошибка поиска следующей тренировки:", err);
+            // В случае ошибки — открываем модалку
+            setSelectedCourseId(courseId);
+            setShowWorkoutModal(true);
+        }
     };
 
     useEffect(() => {
@@ -342,7 +407,10 @@ export default function MyCourses() {
                                 <button
                                     className={`${styles.startButton} btn-primary`}
                                     onClick={() =>
-                                        handleStartTraining(course._id)
+                                        handleStartTraining(
+                                            course._id,
+                                            progress,
+                                        )
                                     }
                                 >
                                     {progress === 0

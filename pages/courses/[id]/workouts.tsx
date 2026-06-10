@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import Header from "@/components/Header/Header";
 import { apiFetch } from "@/libs/apiConfig";
@@ -21,20 +21,38 @@ interface Workout {
 
 export default function WorkoutsPage() {
     const router = useRouter();
-    const { id: courseId } = router.query;
+    const { id: courseId, selected } = router.query;
     const [workouts, setWorkouts] = useState<Workout[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeWorkout, setActiveWorkout] = useState<Workout | null>(null);
+    const selectedRef = useRef<HTMLDivElement | null>(null);
+    const hasLoaded = useRef(false);
 
     useEffect(() => {
-        if (!courseId) return;
+        if (!courseId || hasLoaded.current) return;
+        hasLoaded.current = true;
 
         const fetchWorkouts = async () => {
             try {
                 const data = await apiFetch<Workout[]>(
                     `/courses/${courseId}/workouts`,
                 );
-                setWorkouts(data);
+
+                // Получаем выбранные тренировки из sessionStorage
+                const selectedWorkoutsJson = sessionStorage.getItem(
+                    `selected_workouts_${courseId}`,
+                );
+
+                if (selectedWorkoutsJson) {
+                    const selectedIds: string[] =
+                        JSON.parse(selectedWorkoutsJson);
+                    const filtered = data.filter((w) =>
+                        selectedIds.includes(w._id),
+                    );
+                    setWorkouts(filtered);
+                } else {
+                    setWorkouts(data);
+                }
             } catch (err) {
                 console.error("Ошибка загрузки тренировок:", err);
             } finally {
@@ -44,6 +62,18 @@ export default function WorkoutsPage() {
 
         fetchWorkouts();
     }, [courseId]);
+
+    // Автопрокрутка к выбранной тренировке
+    useEffect(() => {
+        if (selected && selectedRef.current && workouts.length > 0) {
+            setTimeout(() => {
+                selectedRef.current?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                });
+            }, 300);
+        }
+    }, [selected, workouts]);
 
     const getYouTubeId = (url: string) => {
         const match = url.match(
@@ -79,9 +109,16 @@ export default function WorkoutsPage() {
 
                 {workouts.map((workout) => {
                     const videoId = getYouTubeId(workout.video);
+                    const isSelected = selected === workout._id;
 
                     return (
-                        <div key={workout._id} className={styles.workoutBlock}>
+                        <div
+                            key={workout._id}
+                            ref={isSelected ? selectedRef : null}
+                            className={`${styles.workoutBlock} ${
+                                isSelected ? styles.workoutBlockSelected : ""
+                            }`}
+                        >
                             <h2 className={styles.workoutTitle}>
                                 {workout.name}
                             </h2>
@@ -155,6 +192,8 @@ export default function WorkoutsPage() {
                     onSuccess={() => {
                         alert("Прогресс сохранён!");
                         setActiveWorkout(null);
+                        // Перезагружаем для обновления прогресса
+                        window.location.reload();
                     }}
                 />
             )}
