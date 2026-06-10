@@ -264,6 +264,67 @@ export default function MyCourses() {
         fetchMyCourses();
     }, [token]);
 
+    // ✅ Добавь этот блок для обновления при возврате на страницу
+    useEffect(() => {
+        const handleRouteChange = () => {
+            if (token && !loading) {
+                // Тихо обновляем данные без лоадера
+                const refreshData = async () => {
+                    try {
+                        const response = await apiFetch<{ user: UserData }>(
+                            "/users/me",
+                        );
+                        const selectedCourses =
+                            response.user.selectedCourses || [];
+
+                        if (!selectedCourses || selectedCourses.length === 0) {
+                            setCourses([]);
+                            return;
+                        }
+
+                        const coursesData = [];
+                        for (const courseId of selectedCourses) {
+                            try {
+                                const course =
+                                    await apiFetch<CourseWithProgress>(
+                                        `/courses/${courseId}`,
+                                    );
+
+                                const progressResponse = await apiFetch<{
+                                    progress: number;
+                                }>(`/users/me/progress?courseId=${courseId}`);
+                                course.progress =
+                                    progressResponse.progress || 0;
+
+                                coursesData.push(course);
+                                await new Promise((resolve) =>
+                                    setTimeout(resolve, 100),
+                                );
+                            } catch (err) {
+                                console.error(
+                                    `Ошибка обновления курса ${courseId}:`,
+                                    err,
+                                );
+                            }
+                        }
+
+                        setCourses(coursesData);
+                    } catch (err) {
+                        console.error("Ошибка обновления курсов:", err);
+                    }
+                };
+
+                refreshData();
+            }
+        };
+
+        router.events.on("routeChangeComplete", handleRouteChange);
+
+        return () => {
+            router.events.off("routeChangeComplete", handleRouteChange);
+        };
+    }, [token, loading, router]);
+
     const handleRemoveCourse = async (courseId: string) => {
         try {
             await apiFetch(`/users/me/courses/${courseId}`, {

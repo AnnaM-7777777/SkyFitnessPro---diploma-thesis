@@ -25,6 +25,9 @@ export default function ProgressModal({
     onClose,
     onSuccess,
 }: ProgressModalProps) {
+    console.log("📥 ProgressModal получил exercises:", exercises);
+    console.log("📊 Количество упражнений:", exercises?.length);
+    
     // Инициализируем массив прогресса нулями
     const [progressData, setProgressData] = useState<number[]>(
         initialProgress || exercises.map(() => 0),

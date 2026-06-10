@@ -86,7 +86,7 @@ export default function WorkoutsPage() {
     ) => {
         try {
             const progressData = await apiFetch<{
-                workoutsProgress: Array<{
+                workoutsProgress?: Array<{
                     workoutId: string;
                     workoutCompleted: boolean;
                     progressData: number[];
@@ -94,8 +94,12 @@ export default function WorkoutsPage() {
             }>(`/users/me/progress?courseId=${courseIdStr}`);
 
             const workoutsWithProgress = workoutsData.map((workout) => {
-                const workoutProgress = progressData.workoutsProgress.find(
-                    (wp) => wp.workoutId === workout._id,
+                // Проверка на undefined
+                const workoutsProgress = progressData.workoutsProgress || [];
+
+                const workoutProgress = workoutsProgress.find(
+                    (wp: { workoutId: string; workoutCompleted: boolean }) =>
+                        wp.workoutId === workout._id,
                 );
 
                 if (workoutProgress && workoutProgress.progressData) {
@@ -156,11 +160,65 @@ export default function WorkoutsPage() {
         return match ? match[1] : null;
     };
 
+    // Обработчик клика по кнопке "Заполнить прогресс"
+    const handleProgressClick = async (workout: WorkoutWithProgress) => {
+        // Если упражнения уже загружены и есть
+        if (workout.exercises && workout.exercises.length > 0) {
+            setActiveWorkout(workout);
+            return;
+        }
+
+        // Загружаем полную тренировку
+        try {
+            const fullWorkout = await apiFetch<Workout>(
+                `/workouts/${workout._id}`,
+            );
+
+            // Сохраняем упражнения в state
+            setWorkouts((prev) =>
+                prev.map((w) =>
+                    w._id === workout._id
+                        ? { ...w, exercises: fullWorkout.exercises }
+                        : w,
+                ),
+            );
+
+            // Если упражнений нет — просто отмечаем как завершённую
+            if (!fullWorkout.exercises || fullWorkout.exercises.length === 0) {
+                if (
+                    confirm(
+                        "У этой тренировки нет упражнений. Отметить как завершённую?",
+                    )
+                ) {
+                    await apiFetch(
+                        `/courses/${courseId}/workouts/${workout._id}`,
+                        {
+                            method: "PATCH",
+                            body: JSON.stringify({ progressData: [] }),
+                        },
+                    );
+                    alert("Тренировка отмечена как завершённая!");
+                    handleProgressSaved();
+                }
+                return;
+            }
+
+            // Иначе открываем модалку с упражнениями
+            setActiveWorkout({
+                ...workout,
+                exercises: fullWorkout.exercises,
+            });
+        } catch (err) {
+            console.error("Ошибка загрузки упражнений:", err);
+            alert("Не удалось загрузить упражнения");
+        }
+    };
+
     const handleProgressSaved = () => {
         setShowSuccessModal(true);
         setActiveWorkout(null);
 
-        // Перезагружаем прогресс через 1.5 секунды (после закрытия модалки)
+        // Перезагружаем прогресс через 1.5 секунды
         setTimeout(async () => {
             if (courseId) {
                 const data = await apiFetch<Workout[]>(
@@ -315,7 +373,7 @@ export default function WorkoutsPage() {
                             {/* Кнопка прогресса */}
                             <button
                                 className={`${styles.progressButton} btn-primary`}
-                                onClick={() => setActiveWorkout(workout)}
+                                onClick={() => handleProgressClick(workout)}
                             >
                                 {hasProgress
                                     ? "Обновить свой прогресс"
@@ -338,7 +396,6 @@ export default function WorkoutsPage() {
                                   const progress =
                                       activeWorkout.exerciseProgress?.[index]
                                           ?.progress || 0;
-                                  // Пересчитываем процент обратно в количество
                                   return Math.round(
                                       (progress / 100) * exercise.quantity,
                                   );
@@ -348,6 +405,11 @@ export default function WorkoutsPage() {
                     onClose={() => setActiveWorkout(null)}
                     onSuccess={handleProgressSaved}
                 />
+            )}
+
+            {/* Модалка успеха */}
+            {showSuccessModal && (
+                <SuccessModal onClose={() => setShowSuccessModal(false)} />
             )}
         </div>
     );
