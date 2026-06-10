@@ -4,6 +4,7 @@ import Image from "next/image";
 import Header from "@/components/Header/Header";
 import { apiFetch } from "@/libs/apiConfig";
 import ProgressModal from "@/components/ProgressModal/ProgressModal";
+import SuccessModal from "@/components/SuccessModal/SuccessModal";
 import styles from "./WorkoutsPage.module.css";
 
 interface Exercise {
@@ -19,12 +20,22 @@ interface Workout {
     exercises: Exercise[];
 }
 
+interface ExerciseProgress {
+    name: string;
+    progress: number;
+}
+
+interface WorkoutWithProgress extends Workout {
+    exerciseProgress?: ExerciseProgress[];
+}
+
 export default function WorkoutsPage() {
     const router = useRouter();
     const { id: courseId, selected } = router.query;
-    const [workouts, setWorkouts] = useState<Workout[]>([]);
+    const [workouts, setWorkouts] = useState<WorkoutWithProgress[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeWorkout, setActiveWorkout] = useState<Workout | null>(null);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
     const selectedRef = useRef<HTMLDivElement | null>(null);
     const hasLoaded = useRef(false);
 
@@ -38,21 +49,25 @@ export default function WorkoutsPage() {
                     `/courses/${courseId}/workouts`,
                 );
 
-                // Получаем выбранные тренировки из sessionStorage
                 const selectedWorkoutsJson = sessionStorage.getItem(
                     `selected_workouts_${courseId}`,
                 );
 
+                let workoutsToUse = data;
+
                 if (selectedWorkoutsJson) {
                     const selectedIds: string[] =
                         JSON.parse(selectedWorkoutsJson);
-                    const filtered = data.filter((w) =>
+                    workoutsToUse = data.filter((w) =>
                         selectedIds.includes(w._id),
                     );
-                    setWorkouts(filtered);
-                } else {
-                    setWorkouts(data);
                 }
+
+                // Загружаем прогресс только для выбранных тренировок
+                await loadProgressForAllWorkouts(
+                    workoutsToUse,
+                    courseId as string,
+                );
             } catch (err) {
                 console.error("Ошибка загрузки тренировок:", err);
             } finally {
@@ -62,6 +77,64 @@ export default function WorkoutsPage() {
 
         fetchWorkouts();
     }, [courseId]);
+
+    // Загрузка прогресса для всех тренировок
+    const loadProgressForAllWorkouts = async (
+        workoutsData: Workout[],
+        courseIdStr: string,
+    ) => {
+        try {
+            const progressData = await apiFetch<{
+                workoutsProgress: Array<{
+                    workoutId: string;
+                    workoutCompleted: boolean;
+                    progressData: number[];
+                }>;
+            }>(`/users/me/progress?courseId=${courseIdStr}`);
+
+            const workoutsWithProgress = workoutsData.map((workout) => {
+                const workoutProgress = progressData.workoutsProgress.find(
+                    (wp) => wp.workoutId === workout._id,
+                );
+
+                if (workoutProgress && workoutProgress.progressData) {
+                    const exerciseProgress = workout.exercises.map(
+                        (exercise, index) => {
+                            const userProgress =
+                                workoutProgress.progressData[index] || 0;
+                            const percentage =
+                                exercise.quantity > 0
+                                    ? Math.min(
+                                          100,
+                                          Math.round(
+                                              (userProgress /
+                                                  exercise.quantity) *
+                                                  100,
+                                          ),
+                                      )
+                                    : 0;
+
+                            return {
+                                name: exercise.name,
+                                progress: percentage,
+                            };
+                        },
+                    );
+
+                    return {
+                        ...workout,
+                        exerciseProgress,
+                    };
+                }
+
+                return workout;
+            });
+
+            setWorkouts(workoutsWithProgress);
+        } catch (err) {
+            console.error("Ошибка загрузки прогресса:", err);
+        }
+    };
 
     // Автопрокрутка к выбранной тренировке
     useEffect(() => {
@@ -80,6 +153,21 @@ export default function WorkoutsPage() {
             /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/,
         );
         return match ? match[1] : null;
+    };
+
+    const handleProgressSaved = () => {
+        setShowSuccessModal(true);
+        setActiveWorkout(null);
+
+        // Перезагружаем прогресс через 1.5 секунды (после закрытия модалки)
+        setTimeout(async () => {
+            if (courseId) {
+                const data = await apiFetch<Workout[]>(
+                    `/courses/${courseId}/workouts`,
+                );
+                await loadProgressForAllWorkouts(data, courseId as string);
+            }
+        }, 1500);
     };
 
     if (loading) {
@@ -110,6 +198,7 @@ export default function WorkoutsPage() {
                 {workouts.map((workout) => {
                     const videoId = getYouTubeId(workout.video);
                     const isSelected = selected === workout._id;
+                    const hasProgress = !!workout.exerciseProgress;
 
                     return (
                         <div
@@ -141,32 +230,65 @@ export default function WorkoutsPage() {
                                 )}
                             </div>
 
-                            {/* Упражнения */}
+                            {/* Упражнения с прогрессом */}
                             <div className={styles.exercisesBlock}>
                                 <h3 className={styles.exercisesTitle}>
                                     Упражнения тренировки
                                 </h3>
 
                                 <div className={styles.exercisesList}>
-                                    {workout.exercises.map((exercise) => (
-                                        <div
-                                            key={exercise._id}
-                                            className={styles.exerciseItem}
-                                        >
-                                            <span
-                                                className={styles.exerciseName}
-                                            >
-                                                {exercise.name}
-                                            </span>
-                                            <span
-                                                className={
-                                                    styles.exerciseQuantity
-                                                }
-                                            >
-                                                {exercise.quantity} раз
-                                            </span>
-                                        </div>
-                                    ))}
+                                    {workout.exercises.map(
+                                        (exercise, index) => {
+                                            const progress =
+                                                workout.exerciseProgress
+                                                    ? workout.exerciseProgress[
+                                                          index
+                                                      ]?.progress || 0
+                                                    : 0;
+
+                                            return (
+                                                <div
+                                                    key={exercise._id}
+                                                    className={
+                                                        styles.exerciseItem
+                                                    }
+                                                >
+                                                    <span
+                                                        className={
+                                                            styles.exerciseName
+                                                        }
+                                                    >
+                                                        {exercise.name}
+                                                    </span>
+                                                    <span
+                                                        className={
+                                                            styles.exerciseQuantity
+                                                        }
+                                                    >
+                                                        {exercise.quantity} раз
+                                                    </span>
+
+                                                    {/* Прогресс бар */}
+                                                    {hasProgress && (
+                                                        <div
+                                                            className={
+                                                                styles.progressContainer
+                                                            }
+                                                        >
+                                                            <div
+                                                                className={
+                                                                    styles.progressBar
+                                                                }
+                                                                style={{
+                                                                    width: `${progress}%`,
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        },
+                                    )}
                                 </div>
                             </div>
 
@@ -175,7 +297,9 @@ export default function WorkoutsPage() {
                                 className={`${styles.progressButton} btn-primary`}
                                 onClick={() => setActiveWorkout(workout)}
                             >
-                                Заполнить свой прогресс
+                                {hasProgress
+                                    ? "Обновить свой прогресс"
+                                    : "Заполнить свой прогресс"}
                             </button>
                         </div>
                     );
@@ -189,13 +313,13 @@ export default function WorkoutsPage() {
                     workoutId={activeWorkout._id}
                     exercises={activeWorkout.exercises}
                     onClose={() => setActiveWorkout(null)}
-                    onSuccess={() => {
-                        alert("Прогресс сохранён!");
-                        setActiveWorkout(null);
-                        // Перезагружаем для обновления прогресса
-                        window.location.reload();
-                    }}
+                    onSuccess={handleProgressSaved}
                 />
+            )}
+
+            {/* Модалка успеха */}
+            {showSuccessModal && (
+                <SuccessModal onClose={() => setShowSuccessModal(false)} />
             )}
         </div>
     );
