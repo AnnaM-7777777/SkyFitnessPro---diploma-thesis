@@ -53,6 +53,132 @@ export default function MyCourses() {
         null,
     );
 
+    // Функция загрузки курсов (вынесена отдельно)
+    const fetchMyCourses = async (isRefresh = false) => {
+        if (!token) return;
+
+        try {
+            if (!isRefresh) {
+                setLoading(true);
+            }
+
+            const response = await apiFetch<{ user: UserData }>("/users/me");
+            const selectedCourses = response.user.selectedCourses || [];
+
+            console.log("📋 Курсы пользователя:", selectedCourses);
+
+            if (!selectedCourses || selectedCourses.length === 0) {
+                setCourses([]);
+                return;
+            }
+
+            const coursesData = [];
+            for (const courseId of selectedCourses) {
+                try {
+                    const course = await apiFetch<CourseWithProgress>(
+                        `/courses/${courseId}`,
+                    );
+
+                    // Получаем прогресс по курсу
+                    const progressResponse = await apiFetch<{
+                        courseId: string;
+                        courseCompleted: boolean;
+                        workoutsProgress?: Array<{
+                            workoutId: string;
+                            workoutCompleted: boolean;
+                            progressData: number[];
+                        }>;
+                    }>(`/users/me/progress?courseId=${courseId}`);
+
+                    console.log(
+                        `📊 Прогресс курса ${courseId}:`,
+                        progressResponse,
+                    );
+
+                    // Вычисляем прогресс по выбранным тренировкам
+                    const totalWorkouts = course.workouts?.length || 0;
+                    const workoutsProgress =
+                        progressResponse.workoutsProgress || [];
+
+                    console.log(
+                        `📊 Всего тренировок в курсе: ${totalWorkouts}`,
+                    );
+                    console.log(
+                        `📊 Записей в workoutsProgress (выбрано): ${workoutsProgress.length}`,
+                    );
+
+                    workoutsProgress.forEach((wp, index) => {
+                        console.log(`  🏋️ Тренировка ${index + 1}:`, {
+                            workoutId: wp.workoutId,
+                            workoutCompleted: wp.workoutCompleted,
+                            progressData: wp.progressData,
+                        });
+                    });
+
+                    const completedWorkouts = workoutsProgress.filter(
+                        (wp) => wp.workoutCompleted,
+                    ).length;
+
+                    // Прогресс считается по выбранным тренировкам
+                    const selectedWorkoutsCount = workoutsProgress.length;
+                    const progress =
+                        selectedWorkoutsCount > 0
+                            ? Math.round(
+                                  (completedWorkouts / selectedWorkoutsCount) *
+                                      100,
+                              )
+                            : 0;
+
+                    console.log(
+                        `📈 Завершено: ${completedWorkouts}/${selectedWorkoutsCount} = ${progress}%`,
+                    );
+
+                    course.progress = progress;
+                    coursesData.push(course);
+                    await new Promise((resolve) => setTimeout(resolve, 100));
+                } catch (err) {
+                    console.error(`Ошибка загрузки курса ${courseId}:`, err);
+                }
+            }
+
+            console.log("✅ Загруженные курсы:", coursesData);
+            setCourses(coursesData);
+        } catch (err: unknown) {
+            console.error("Ошибка загрузки курсов:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Загрузка при монтировании (первый вход)
+    useEffect(() => {
+        if (!token) {
+            setLoading(false);
+            return;
+        }
+
+        fetchMyCourses(false);
+    }, [token]);
+
+    // Обновление при каждом возврате на страницу
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === "visible" && token && !loading) {
+                console.log("🔄 Страница стала видимой, обновляем данные");
+                fetchMyCourses(true);
+            }
+        };
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+
+        return () => {
+            document.removeEventListener(
+                "visibilitychange",
+                handleVisibilityChange,
+            );
+        };
+    }, [token, loading]);
+
     // Обработчик кнопки:
     const handleStartTraining = async (courseId: string, progress: number) => {
         if (progress >= 100) {
@@ -138,192 +264,6 @@ export default function MyCourses() {
             setShowWorkoutModal(true);
         }
     };
-
-    useEffect(() => {
-        if (!token) {
-            setLoading(false);
-            return;
-        }
-
-        const fetchMyCourses = async () => {
-            try {
-                setLoading(true);
-
-                // Проверяем кэш для списка курсов пользователя
-                const cachedUser = sessionStorage.getItem("user_data_cache");
-                let selectedCourses: string[] = [];
-
-                if (cachedUser) {
-                    const { data, timestamp } = JSON.parse(cachedUser);
-                    // Кэш действителен 30 секунд
-                    if (Date.now() - timestamp < 30000) {
-                        selectedCourses = data;
-                    } else {
-                        // Кэш устарел
-                        const response = await apiFetch<{ user: UserData }>(
-                            "/users/me",
-                        );
-                        selectedCourses = response.user.selectedCourses || [];
-                        sessionStorage.setItem(
-                            "user_data_cache",
-                            JSON.stringify({
-                                data: selectedCourses,
-                                timestamp: Date.now(),
-                            }),
-                        );
-                    }
-                } else {
-                    // Кэша нет
-                    const response = await apiFetch<{ user: UserData }>(
-                        "/users/me",
-                    );
-                    selectedCourses = response.user.selectedCourses || [];
-                    sessionStorage.setItem(
-                        "user_data_cache",
-                        JSON.stringify({
-                            data: selectedCourses,
-                            timestamp: Date.now(),
-                        }),
-                    );
-                }
-
-                if (!selectedCourses || selectedCourses.length === 0) {
-                    setCourses([]);
-                    return;
-                }
-
-                // Загружаем данные курсов с задержкой, чтобы не перегружать сервер
-                const coursesData = [];
-                for (const courseId of selectedCourses) {
-                    try {
-                        // Проверяем кэш для конкретного курса
-                        const cachedCourse = sessionStorage.getItem(
-                            `course_${courseId}`,
-                        );
-                        let course;
-
-                        if (cachedCourse) {
-                            const { data, timestamp } =
-                                JSON.parse(cachedCourse);
-                            if (Date.now() - timestamp < 60000) {
-                                // Кэш действителен 60 секунд
-                                course = data;
-                            } else {
-                                course = await apiFetch<Course>(
-                                    `/courses/${courseId}`,
-                                );
-                                sessionStorage.setItem(
-                                    `course_${courseId}`,
-                                    JSON.stringify({
-                                        data: course,
-                                        timestamp: Date.now(),
-                                    }),
-                                );
-                            }
-                        } else {
-                            course = await apiFetch<Course>(
-                                `/courses/${courseId}`,
-                            );
-                            sessionStorage.setItem(
-                                `course_${courseId}`,
-                                JSON.stringify({
-                                    data: course,
-                                    timestamp: Date.now(),
-                                }),
-                            );
-                        }
-
-                        // Получаем прогресс
-                        const progressResponse = await apiFetch<{
-                            progress: number;
-                        }>(`/users/me/progress?courseId=${courseId}`);
-                        course.progress = progressResponse.progress || 0;
-
-                        coursesData.push(course);
-
-                        // Задержка 100мс между запросами
-                        await new Promise((resolve) =>
-                            setTimeout(resolve, 100),
-                        );
-                    } catch (err) {
-                        console.error(
-                            `Ошибка загрузки курса ${courseId}:`,
-                            err,
-                        );
-                    }
-                }
-
-                setCourses(coursesData);
-            } catch (err: unknown) {
-                console.error("Ошибка загрузки курсов:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchMyCourses();
-    }, [token]);
-
-    // ✅ Добавь этот блок для обновления при возврате на страницу
-    useEffect(() => {
-        const handleRouteChange = () => {
-            if (token && !loading) {
-                // Тихо обновляем данные без лоадера
-                const refreshData = async () => {
-                    try {
-                        const response = await apiFetch<{ user: UserData }>(
-                            "/users/me",
-                        );
-                        const selectedCourses =
-                            response.user.selectedCourses || [];
-
-                        if (!selectedCourses || selectedCourses.length === 0) {
-                            setCourses([]);
-                            return;
-                        }
-
-                        const coursesData = [];
-                        for (const courseId of selectedCourses) {
-                            try {
-                                const course =
-                                    await apiFetch<CourseWithProgress>(
-                                        `/courses/${courseId}`,
-                                    );
-
-                                const progressResponse = await apiFetch<{
-                                    progress: number;
-                                }>(`/users/me/progress?courseId=${courseId}`);
-                                course.progress =
-                                    progressResponse.progress || 0;
-
-                                coursesData.push(course);
-                                await new Promise((resolve) =>
-                                    setTimeout(resolve, 100),
-                                );
-                            } catch (err) {
-                                console.error(
-                                    `Ошибка обновления курса ${courseId}:`,
-                                    err,
-                                );
-                            }
-                        }
-
-                        setCourses(coursesData);
-                    } catch (err) {
-                        console.error("Ошибка обновления курсов:", err);
-                    }
-                };
-
-                refreshData();
-            }
-        };
-
-        router.events.on("routeChangeComplete", handleRouteChange);
-
-        return () => {
-            router.events.off("routeChangeComplete", handleRouteChange);
-        };
-    }, [token, loading, router]);
 
     const handleRemoveCourse = async (courseId: string) => {
         try {
