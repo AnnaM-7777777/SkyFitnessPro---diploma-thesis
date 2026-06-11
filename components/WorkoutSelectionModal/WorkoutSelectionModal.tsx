@@ -90,36 +90,48 @@ export default function WorkoutSelectionModal({
     return (
         <div className={styles.overlay} onClick={onClose}>
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-                <h2 className={styles.title}>Выберите тренировку</h2>
+                <div className={styles.blockTitle}>
+                    <h2 className={styles.title}>Выберите тренировку</h2>
+                </div>
+                
+                <div className={styles.scrollContainer}>
+                    <div className={styles.workoutList}>
+                        {workouts.map((workout) => (
+                            <label
+                                key={workout._id}
+                                className={styles.workoutItem}
+                            >
+                                <input
+                                    type="checkbox"
+                                    checked={selectedWorkouts.includes(
+                                        workout._id,
+                                    )}
+                                    onChange={() => handleToggle(workout._id)}
+                                    className={styles.checkbox}
+                                />
 
-                <div className={styles.workoutList}>
-                    {workouts.map((workout) => (
-                        <label key={workout._id} className={styles.workoutItem}>
-                            <input
-                                type="checkbox"
-                                checked={selectedWorkouts.includes(workout._id)}
-                                onChange={() => handleToggle(workout._id)}
-                                className={styles.checkbox}
-                            />
-                            <div className={styles.workoutInfo}>
-                                <div className={styles.workoutName}>
-                                    {workout.name}
+                                <div className={styles.workoutInfo}>
+                                    <div className={styles.workoutName}>
+                                        {workout.name}
+                                    </div>
+                                    <div className={styles.workoutMeta}>
+                                        {workout.exercises.length} упражнений
+                                    </div>
                                 </div>
-                                <div className={styles.workoutMeta}>
-                                    {workout.exercises.length} упражнений
-                                </div>
-                            </div>
-                        </label>
-                    ))}
+                            </label>
+                        ))}
+                    </div>
                 </div>
 
-                <button
-                    className={`${styles.startButton} btn-primary`}
-                    onClick={handleStart}
-                    disabled={selectedWorkouts.length === 0}
-                >
-                    Начать
-                </button>
+                <div className={styles.blockButton}>
+                    <button
+                        className={`${styles.startButton} btn-primary`}
+                        onClick={handleStart}
+                        disabled={selectedWorkouts.length === 0}
+                    >
+                        Начать
+                    </button>
+                </div>
             </div>
         </div>
     );
