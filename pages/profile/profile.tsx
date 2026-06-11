@@ -6,14 +6,17 @@ import styles from "./ProfilePage.module.css";
 export default function ProfilePage() {
     return (
         <div className={styles.profilePage}>
-            <Header />
-            <h2 className={styles.profilePage__title}>Профиль</h2>
+            <Header showTitle={false} />
 
-            <Profile />
+            <main className={styles.profilePage__content}>
+                <h2 className={styles.profilePage__title}>Профиль</h2>
 
-            <h2 className={styles.profilePage__title}>Мои курсы</h2>
+                <Profile />
 
-            <MyCourses />
+                <h2 className={styles.profilePage__title}>Мои курсы</h2>
+
+                <MyCourses />
+            </main>
         </div>
     );
 }

@@ -70,15 +70,15 @@
 }
 
 .scrollContainer::-webkit-scrollbar-thumb {
-    /* background-color: var(--border-btn-secondary) !important;    
+    /* background-color: var(--text-primary) !important;    
     min-height: 116px !important; */
 
      /* Создаем градиент: прозрачный (20px) -> черный -> прозрачный (20px) */
     background: linear-gradient(
         to bottom,
         transparent 0,
-        var(--border-btn-secondary) 0,
-        var(--border-btn-secondary) calc(100% - 116px),
+        var(--text-primary) 0,
+        var(--text-primary) calc(100% - 116px),
         transparent 0
     ) !important;
     
@@ -102,7 +102,7 @@
 @supports not selector(::-webkit-scrollbar) {
     .scrollContainer {
         scrollbar-width: thin;
-        scrollbar-color: var(--border-btn-secondary) transparent;
+        scrollbar-color: var(--text-primary) transparent;
     }
 }
 

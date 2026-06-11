@@ -5,7 +5,11 @@ import { useAuth } from "@/context/AuthContext";
 import styles from "./Header.module.css";
 import Logo from "../../components/Logo/Logo";
 
-export default function Header() {
+interface HeaderProps {
+    showTitle?: boolean; // По умолчанию true
+}
+
+export default function Header({ showTitle = true }: HeaderProps) {
     const { user, logout, isLoading } = useAuth();
 
     // Стейт для управления меню профиля
@@ -47,9 +51,12 @@ export default function Header() {
             <div className={styles.header__container}>
                 <Logo />
 
-                <p className={styles.container__text}>
-                    Онлайн-тренировки для занятий дома
-                </p>
+                {/* Условный рендеринг заголовка */}
+                {showTitle && (
+                    <p className={styles.container__text}>
+                        Онлайн-тренировки для занятий дома
+                    </p>
+                )}
             </div>
 
             <div className={styles.header__auth}>

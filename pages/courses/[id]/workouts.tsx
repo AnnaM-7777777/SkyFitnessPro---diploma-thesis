@@ -39,6 +39,7 @@ export default function WorkoutsPage() {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const selectedRef = useRef<HTMLDivElement | null>(null);
     const hasLoaded = useRef(false);
+    const [courseName, setCourseName] = useState<string>("");
 
     useEffect(() => {
         if (!courseId || hasLoaded.current) return;
@@ -46,6 +47,13 @@ export default function WorkoutsPage() {
 
         const fetchWorkouts = async () => {
             try {
+                // Загружаем данные курса
+                const courseData = await apiFetch<{
+                    nameRU: string;
+                    nameEN: string;
+                }>(`/courses/${courseId}`);
+                setCourseName(courseData.nameRU || courseData.nameEN || "Курс");
+
                 const data = await apiFetch<Workout[]>(
                     `/courses/${courseId}/workouts`,
                 );
@@ -64,7 +72,6 @@ export default function WorkoutsPage() {
                     );
                 }
 
-                // Загружаем прогресс только для выбранных тренировок
                 await loadProgressForAllWorkouts(
                     workoutsToUse,
                     courseId as string,
@@ -251,7 +258,7 @@ export default function WorkoutsPage() {
     if (loading) {
         return (
             <div className={styles.container}>
-                <Header />
+                <Header showTitle={false} />
                 <div className={styles.loading}>Загрузка тренировок...</div>
             </div>
         );
@@ -260,7 +267,7 @@ export default function WorkoutsPage() {
     if (workouts.length === 0) {
         return (
             <div className={styles.container}>
-                <Header />
+                <Header showTitle={false} />
                 <div className={styles.empty}>Тренировки не найдены</div>
             </div>
         );
@@ -268,106 +275,82 @@ export default function WorkoutsPage() {
 
     return (
         <div className={styles.container}>
-            <Header />
+            <Header showTitle={false} />
+            <h2 className={styles.title}>{courseName}</h2>
 
-            <main className={styles.main}>
-                <h1 className={styles.title}>Тренировки курса</h1>
+            {workouts.map((workout) => {
+                const videoId = getYouTubeId(workout.video);
+                const isSelected = selected === workout._id;
+                const hasProgress = !!workout.exerciseProgress;
 
-                {workouts.map((workout) => {
-                    const videoId = getYouTubeId(workout.video);
-                    const isSelected = selected === workout._id;
-                    const hasProgress = !!workout.exerciseProgress;
-
-                    return (
-                        <div
-                            key={workout._id}
-                            ref={isSelected ? selectedRef : null}
-                            className={`${styles.workoutBlock} ${
-                                isSelected ? styles.workoutBlockSelected : ""
-                            }`}
-                        >
-                            <h2 className={styles.workoutTitle}>
-                                {workout.name}
-                            </h2>
-
-                            {/* Видео */}
-                            <div className={styles.videoWrapper}>
-                                {videoId ? (
-                                    <iframe
-                                        src={`https://www.youtube.com/embed/${videoId}`}
-                                        title={workout.name}
-                                        frameBorder="0"
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                        allowFullScreen
-                                        className={styles.video}
-                                    />
-                                ) : (
-                                    <div className={styles.videoPlaceholder}>
-                                        Видео недоступно
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Упражнения с прогрессом */}
-                            <div className={styles.exercisesBlock}>
-                                <h3 className={styles.exercisesTitle}>
-                                    Упражнения тренировки
-                                </h3>
-
-                                <div className={styles.exercisesList}>
-                                    {workout.exercises.map(
-                                        (exercise, index) => {
-                                            const progress =
-                                                workout.exerciseProgress
-                                                    ? workout.exerciseProgress[
-                                                          index
-                                                      ]?.progress || 0
-                                                    : 0;
-
-                                            return (
-                                                <div
-                                                    key={exercise._id}
-                                                    className={
-                                                        styles.exerciseItem
-                                                    }
-                                                >
-                                                    <span
-                                                        className={
-                                                            styles.exerciseName
-                                                        }
-                                                    >
-                                                        {exercise.name}
-                                                    </span>
-                                                    <span
-                                                        className={
-                                                            styles.exerciseQuantity
-                                                        }
-                                                    >
-                                                        {exercise.quantity} раз
-                                                    </span>
-
-                                                    {/* Прогресс бар */}
-                                                    {hasProgress && (
-                                                        <div
-                                                            className={
-                                                                styles.progressContainer
-                                                            }
-                                                        >
-                                                            <div
-                                                                className={
-                                                                    styles.progressBar
-                                                                }
-                                                                style={{
-                                                                    width: `${progress}%`,
-                                                                }}
-                                                            />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            );
-                                        },
-                                    )}
+                return (
+                    <div
+                        key={workout._id}
+                        ref={isSelected ? selectedRef : null}
+                        className={`${styles.workoutBlock} ${
+                            isSelected ? styles.workoutBlockSelected : ""
+                        }`}
+                    >
+                        {/* Видео */}
+                        <div className={styles.videoWrapper}>
+                            {videoId ? (
+                                <iframe
+                                    src={`https://www.youtube.com/embed/${videoId}`}
+                                    title={workout.name}
+                                    frameBorder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                    className={styles.video}
+                                />
+                            ) : (
+                                <div className={styles.videoPlaceholder}>
+                                    Видео недоступно
                                 </div>
+                            )}
+                        </div>
+
+                        {/* Упражнения с прогрессом */}
+                        <div className={styles.exercisesBlock}>
+                            <h3 className={styles.exercisesTitle}>
+                                Упражнения тренировки
+                            </h3>
+
+                            <div className={styles.exercisesList}>
+                                {workout.exercises.map((exercise, index) => {
+                                    const progress = workout.exerciseProgress
+                                        ? workout.exerciseProgress[index]
+                                              ?.progress || 0
+                                        : 0;
+
+                                    return (
+                                        <div
+                                            key={exercise._id}
+                                            className={styles.exerciseItem}
+                                        >
+                                            <span
+                                                className={styles.exerciseName}
+                                            >
+                                                {exercise.name} {progress}%
+                                            </span>
+
+                                            {/* Прогресс бар */}
+                                            <div
+                                                className={
+                                                    styles.progressContainer
+                                                }
+                                            >
+                                                <div
+                                                    className={
+                                                        styles.progressBar
+                                                    }
+                                                    style={{
+                                                        width: `${progress}%`,
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
 
                             {/* Кнопка прогресса */}
@@ -380,9 +363,11 @@ export default function WorkoutsPage() {
                                     : "Заполнить свой прогресс"}
                             </button>
                         </div>
-                    );
-                })}
-            </main>
+
+                        <hr className={styles.exercisesLine} />
+                    </div>
+                );
+            })}
 
             {/* Модалка прогресса */}
             {activeWorkout && courseId && (

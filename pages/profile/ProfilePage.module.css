@@ -1,7 +1,11 @@
 .profilePage {
     width: 100%;
-    padding: 24px calc(50% - 600px);
     background-color: var(--bg-primary);
+}
+
+.profilePage__content {
+    width: 100%;
+    padding: 0 calc(50% - 600px);
 }
 
 .profilePage__title {

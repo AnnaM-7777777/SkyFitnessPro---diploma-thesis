@@ -1,12 +1,11 @@
 .homePage {
     width: 100%;
-    padding: 0 calc(50% - 600px);
     background-color: var(--bg-primary);
 }
 
 .homePage__container {
     width: 100%;
-    padding: 10px 0 81px;
+    padding: 0 calc(50% - 600px) 81px;
 }
 
 .container__text {
@@ -67,7 +66,7 @@
     text-align: center;
 }
 
-/* 👇 Контейнер для модального окна поверх контента */
+/* Контейнер для модального окна поверх контента */
 .modalWrapper {
   position: fixed;
   inset: 0;
