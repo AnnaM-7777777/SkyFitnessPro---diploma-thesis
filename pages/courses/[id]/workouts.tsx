@@ -402,7 +402,9 @@ export default function WorkoutsPage() {
             {workouts.map((workout) => {
                 const videoId = getYouTubeId(workout.video);
                 const isSelected = selected === workout._id;
-                const hasProgress = !!workout.exerciseProgress;
+                const hasProgress =
+                    workout.exerciseProgress?.some((ep) => ep.progress > 0) ??
+                    false;
 
                 return (
                     <div
