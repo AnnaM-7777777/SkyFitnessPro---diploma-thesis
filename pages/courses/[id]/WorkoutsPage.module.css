@@ -110,6 +110,12 @@
     transition: width 0.3s ease;
 }
 
-.progressButton {
+.progressButtonsBlock {
+    display: flex;
+    justify-content: space-between;
+}
+
+.progressButton,
+.resetButton {
     width: 320px;
 }

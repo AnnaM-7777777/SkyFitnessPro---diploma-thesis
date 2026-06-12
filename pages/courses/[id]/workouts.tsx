@@ -290,6 +290,92 @@ export default function WorkoutsPage() {
         }, 1500);
     };
 
+    // Сброс прогресса конкретной тренировки
+    const handleResetWorkoutProgress = async (
+        workoutId: string,
+        exercisesCount: number,
+    ) => {
+        if (
+            confirm(
+                "Сбросить прогресс этой тренировки? Это действие нельзя отменить.",
+            )
+        ) {
+            try {
+                const emptyProgress = Array(exercisesCount).fill(0);
+
+                await apiFetch(`/courses/${courseId}/workouts/${workoutId}`, {
+                    method: "PATCH",
+                    body: JSON.stringify({ progressData: emptyProgress }),
+                });
+
+                // Проверяем прогресс через новый запрос к API
+                if (courseId) {
+                    const selectedWorkoutsJson = sessionStorage.getItem(
+                        `selected_workouts_${courseId}`,
+                    );
+
+                    if (selectedWorkoutsJson) {
+                        const selectedIds: string[] =
+                            JSON.parse(selectedWorkoutsJson);
+
+                        // Запрашиваем свежий прогресс
+                        const progressResponse = await apiFetch<{
+                            workoutsProgress?: Array<{
+                                workoutId: string;
+                                workoutCompleted: boolean;
+                                progressData: number[];
+                            }>;
+                        }>(`/users/me/progress?courseId=${courseId}`);
+
+                        const workoutsProgress =
+                            progressResponse.workoutsProgress || [];
+
+                        // Проверяем, есть ли прогресс хотя бы у одной выбранной тренировки
+                        const hasAnyProgress = selectedIds.some((id) => {
+                            const wp = workoutsProgress.find(
+                                (p) => p.workoutId === id,
+                            );
+                            return (
+                                wp &&
+                                wp.progressData &&
+                                wp.progressData.some((val) => val > 0)
+                            );
+                        });
+
+                        // Если прогресса больше нет — очищаем sessionStorage
+                        if (!hasAnyProgress) {
+                            sessionStorage.removeItem(
+                                `selected_workouts_${courseId}`,
+                            );
+                        }
+                    }
+
+                    // Перезагружаем тренировки с прогрессом
+                    const data = await apiFetch<Workout[]>(
+                        `/courses/${courseId}/workouts`,
+                    );
+
+                    let workoutsToUse = data;
+
+                    if (selectedWorkoutsJson) {
+                        const selectedIds: string[] =
+                            JSON.parse(selectedWorkoutsJson);
+                        workoutsToUse = data.filter((w) =>
+                            selectedIds.includes(w._id),
+                        );
+                    }
+
+                    await loadProgressForAllWorkouts(
+                        workoutsToUse,
+                        courseId as string,
+                    );
+                }
+            } catch (err) {
+                console.error("Ошибка сброса прогресса:", err);
+            }
+        }
+    };
+
     if (loading) {
         return (
             <div className={styles.container}>
@@ -391,15 +477,32 @@ export default function WorkoutsPage() {
                                 })}
                             </div>
 
-                            {/* Кнопка прогресса */}
-                            <button
-                                className={`${styles.progressButton} btn-primary`}
-                                onClick={() => handleProgressClick(workout)}
-                            >
-                                {hasProgress
-                                    ? "Обновить свой прогресс"
-                                    : "Заполнить свой прогресс"}
-                            </button>
+                            {/* Блок кнопок прогресса */}
+                            <div className={styles.progressButtonsBlock}>
+                                <button
+                                    className={`${styles.progressButton} btn-primary`}
+                                    onClick={() => handleProgressClick(workout)}
+                                >
+                                    {hasProgress
+                                        ? "Обновить свой прогресс"
+                                        : "Заполнить свой прогресс"}
+                                </button>
+
+                                {/* Кнопка сброса — только если есть прогресс */}
+                                {hasProgress && (
+                                    <button
+                                        className={`${styles.resetButton} btn-secondary`}
+                                        onClick={() =>
+                                            handleResetWorkoutProgress(
+                                                workout._id,
+                                                workout.exercises.length,
+                                            )
+                                        }
+                                    >
+                                        Сбросить свой прогресс
+                                    </button>
+                                )}
+                            </div>
                         </div>
 
                         <hr className={styles.exercisesLine} />

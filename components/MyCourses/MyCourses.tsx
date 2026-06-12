@@ -26,7 +26,10 @@ type CourseProgressData = {
     workoutsProgress: WorkoutProgress[];
 };
 
-type CourseWithProgress = Course & { progress: number };
+type CourseWithProgress = Course & {
+    progress: number;
+    hasSelectedWorkouts?: boolean;
+};
 
 const COURSE_IMAGES: Record<string, string> = {
     Йога: "/img/1-yoga-l.png",
@@ -52,6 +55,7 @@ export default function MyCourses() {
     const [selectedCourseId, setSelectedCourseId] = useState<string | null>(
         null,
     );
+    const [isNavigating, setIsNavigating] = useState(false);
 
     // Функция загрузки курсов (вынесена отдельно)
     const fetchMyCourses = async (isRefresh = false) => {
@@ -97,27 +101,38 @@ export default function MyCourses() {
                     const workoutsProgress =
                         progressResponse.workoutsProgress || [];
 
-                    // Считаем прогресс только по выбранным тренировкам
+                    // Считаем прогресс по выбранным тренировкам
                     let completedWorkouts = 0;
                     let totalSelectedWorkouts = 0;
+
+                    // Функция проверки: есть ли у тренировки хоть какой-то прогресс
+                    const hasAnyProgress = (wp: {
+                        progressData: number[];
+                        workoutCompleted: boolean;
+                    }): boolean => {
+                        return (
+                            wp.workoutCompleted ||
+                            (wp.progressData &&
+                                wp.progressData.some((val) => val > 0))
+                        );
+                    };
 
                     if (hasSelectedWorkouts && selectedWorkoutsJson) {
                         const selectedIds: string[] =
                             JSON.parse(selectedWorkoutsJson);
                         totalSelectedWorkouts = selectedIds.length;
 
-                        // Считаем завершённые только среди выбранных
+                        // Считаем тренировки с любым прогрессом среди выбранных
                         completedWorkouts = workoutsProgress.filter((wp) => {
                             return (
                                 selectedIds.includes(wp.workoutId) &&
-                                wp.workoutCompleted
+                                hasAnyProgress(wp)
                             );
                         }).length;
                     } else {
-                        // Если выбранных нет — считаем по всем
                         totalSelectedWorkouts = workoutsProgress.length;
-                        completedWorkouts = workoutsProgress.filter(
-                            (wp) => wp.workoutCompleted,
+                        completedWorkouts = workoutsProgress.filter((wp) =>
+                            hasAnyProgress(wp),
                         ).length;
                     }
 
@@ -130,8 +145,9 @@ export default function MyCourses() {
                             : 0;
 
                     // Добавляем флаг, есть ли выбранные тренировки
-                    (course as any).hasSelectedWorkouts = hasSelectedWorkouts;
+                    course.hasSelectedWorkouts = hasSelectedWorkouts;
                     course.progress = progress;
+
                     coursesData.push(course);
 
                     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -177,34 +193,39 @@ export default function MyCourses() {
     }, [token, loading]);
 
     // Обработчик кнопки:
+
     const handleStartTraining = async (
         courseId: string,
         progress: number,
         hasSelectedWorkouts: boolean,
     ) => {
+        // Блокируем повторные клики
+        if (isNavigating) return;
+
         if (progress >= 100) {
-            if (confirm("Сбросить весь прогресс по курсу и начать сначала?")) {
+            if (confirm("Курс завершён! Сбросить прогресс и начать сначала?")) {
                 try {
+                    setIsNavigating(true);
                     await apiFetch(`/courses/${courseId}/reset`, {
                         method: "PATCH",
                     });
 
-                    // Очищаем sessionStorage для этого курса
                     sessionStorage.removeItem(`selected_workouts_${courseId}`);
                     sessionStorage.removeItem(`course_${courseId}`);
 
-                    // Перезагружаем прогресс
                     await fetchMyCourses(true);
                 } catch (err) {
                     console.error("Ошибка сброса прогресса:", err);
                     alert("Не удалось сбросить прогресс");
+                } finally {
+                    setIsNavigating(false);
                 }
             }
         } else if (hasSelectedWorkouts) {
-            // Если тренировки уже выбраны — сразу переходим на страницу тренировок
+            setIsNavigating(true);
             await openNextIncompleteWorkout(courseId);
+            setIsNavigating(false);
         } else {
-            // Если тренировки ещё не выбраны — открываем модалку
             setSelectedCourseId(courseId);
             setShowWorkoutModal(true);
         }
@@ -213,12 +234,10 @@ export default function MyCourses() {
     // Функция для открытия следующей незавершённой тренировки
     const openNextIncompleteWorkout = async (courseId: string) => {
         try {
-            // Получаем все тренировки курса
             const workouts = await apiFetch<
                 Array<{ _id: string; name: string }>
             >(`/courses/${courseId}/workouts`);
 
-            // Получаем прогресс по всем тренировкам
             const progressData = await apiFetch<{
                 workoutsProgress: Array<{
                     workoutId: string;
@@ -226,7 +245,6 @@ export default function MyCourses() {
                 }>;
             }>(`/users/me/progress?courseId=${courseId}`);
 
-            // Находим первую незавершённую тренировку
             const incompleteWorkout = workouts.find((workout) => {
                 const workoutProgress = progressData.workoutsProgress.find(
                     (wp) => wp.workoutId === workout._id,
@@ -234,20 +252,26 @@ export default function MyCourses() {
                 return !workoutProgress?.workoutCompleted;
             });
 
-            if (incompleteWorkout) {
-                // Открываем найденную тренировку
-                router.push(
-                    `/courses/${courseId}/workouts?selected=${incompleteWorkout._id}`,
-                );
-            } else {
-                // Если все завершены — открываем первую
-                router.push(
-                    `/courses/${courseId}/workouts?selected=${workouts[0]?._id}`,
-                );
+            const targetWorkout = incompleteWorkout || workouts[0];
+
+            if (targetWorkout) {
+                // Используем Promise и игнорируем ошибку прерывания
+                router
+                    .push(
+                        `/courses/${courseId}/workouts?selected=${targetWorkout._id}`,
+                    )
+                    .catch((err) => {
+                        // Игнорируем ошибку прерывания маршрута
+                        if (
+                            err instanceof Error &&
+                            !err.message.includes("Abort")
+                        ) {
+                            console.error("Ошибка перехода:", err);
+                        }
+                    });
             }
         } catch (err) {
             console.error("Ошибка поиска следующей тренировки:", err);
-            // В случае ошибки — открываем модалку
             setSelectedCourseId(courseId);
             setShowWorkoutModal(true);
         }
@@ -416,16 +440,18 @@ export default function MyCourses() {
                                         handleStartTraining(
                                             course._id,
                                             progress,
-                                            (course as any)
-                                                .hasSelectedWorkouts || false,
+                                            course.hasSelectedWorkouts || false,
                                         )
                                     }
+                                    disabled={isNavigating} // Блокируем во время перехода
                                 >
-                                    {progress >= 100
-                                        ? "Начать снова"
-                                        : (course as any).hasSelectedWorkouts
-                                          ? "Продолжить"
-                                          : "Начать тренировки"}
+                                    {isNavigating
+                                        ? "Загрузка..."
+                                        : progress >= 100
+                                          ? "Начать снова"
+                                          : course.hasSelectedWorkouts
+                                            ? "Продолжить"
+                                            : "Начать тренировки"}
                                 </button>
                             </div>
                         </article>
