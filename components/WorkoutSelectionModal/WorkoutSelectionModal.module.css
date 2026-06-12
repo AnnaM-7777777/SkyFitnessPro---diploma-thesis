@@ -73,7 +73,7 @@
     /* background-color: var(--text-primary) !important;    
     min-height: 116px !important; */
 
-     /* Создаем градиент: прозрачный (20px) -> черный -> прозрачный (20px) */
+     /* Создаем градиент: прозрачный (0px) -> черный -> прозрачный (0px) */
     background: linear-gradient(
         to bottom,
         transparent 0,
@@ -117,7 +117,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    border-bottom: 1px solid #c4c4c4;
+    border-bottom: var(--border-bottom-list);
     cursor: pointer;
     transition: all 0.2s;
     padding-bottom: 10px;
@@ -128,7 +128,7 @@
     -webkit-appearance: none;
     width: 20px;
     height: 20px;
-    border: 1px solid rgba(0, 0, 0, 1);
+    border: var(--border-btn-secondary);
     border-radius: 50%;
     cursor: pointer;
     position: relative;

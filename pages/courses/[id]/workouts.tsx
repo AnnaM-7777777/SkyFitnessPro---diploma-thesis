@@ -311,9 +311,7 @@ export default function WorkoutsPage() {
 
                         {/* Упражнения с прогрессом */}
                         <div className={styles.exercisesBlock}>
-                            <h3 className={styles.exercisesTitle}>
-                                Упражнения тренировки
-                            </h3>
+                            <h3 className={styles.exercisesTitle}>{workout.name}</h3>
 
                             <div className={styles.exercisesList}>
                                 {workout.exercises.map((exercise, index) => {

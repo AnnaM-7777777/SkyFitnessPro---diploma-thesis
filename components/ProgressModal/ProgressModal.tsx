@@ -5,14 +5,13 @@ import styles from "./ProgressModal.module.css";
 interface Exercise {
     _id: string;
     name: string;
-    quantity: number;
 }
 
 interface ProgressModalProps {
     courseId: string;
     workoutId: string;
-    exercises: Exercise[];    
-    initialProgress?: number[]; 
+    exercises: Exercise[];
+    initialProgress?: number[];
     onClose: () => void;
     onSuccess: () => void;
 }
@@ -25,9 +24,6 @@ export default function ProgressModal({
     onClose,
     onSuccess,
 }: ProgressModalProps) {
-    console.log("📥 ProgressModal получил exercises:", exercises);
-    console.log("📊 Количество упражнений:", exercises?.length);
-    
     // Инициализируем массив прогресса нулями
     const [progressData, setProgressData] = useState<number[]>(
         initialProgress || exercises.map(() => 0),
@@ -71,51 +67,42 @@ export default function ProgressModal({
     return (
         <div className={styles.overlay} onClick={onClose}>
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-                <h2 className={styles.title}>Заполните прогресс</h2>
-
-                <p className={styles.subtitle}>
-                    Укажите, сколько раз выполнили каждое упражнение
-                </p>
-
-                <div className={styles.exercisesList}>
-                    {exercises.map((exercise, index) => (
-                        <div key={exercise._id} className={styles.exerciseRow}>
-                            <div className={styles.exerciseInfo}>
-                                <div className={styles.exerciseName}>
-                                    {exercise.name}
+                <h2 className={styles.title}>Мой прогресс</h2>
+                
+                <div className={styles.scrollContainer}>
+                    <div className={styles.exercisesList}>
+                        {exercises.map((exercise, index) => (
+                            <div
+                                key={exercise._id}
+                                className={styles.exerciseRow}
+                            >
+                                <div className={styles.exerciseInfo}>
+                                    <div className={styles.exerciseName}>
+                                        {exercise.name}
+                                    </div>
                                 </div>
-                                <div className={styles.exerciseTarget}>
-                                    Цель: {exercise.quantity} раз
-                                </div>
+
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max="1000"
+                                    value={progressData[index]}
+                                    onChange={(e) =>
+                                        handleInputChange(index, e.target.value)
+                                    }
+                                    className={styles.input}
+                                    disabled={isSubmitting}
+                                />
                             </div>
-
-                            <input
-                                type="number"
-                                min="0"
-                                max="1000"
-                                value={progressData[index]}
-                                onChange={(e) =>
-                                    handleInputChange(index, e.target.value)
-                                }
-                                className={styles.input}
-                                disabled={isSubmitting}
-                            />
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
 
                 {error && <div className={styles.error}>{error}</div>}
 
-                <div className={styles.buttons}>
+                <div className={styles.buttonBlock}>
                     <button
-                        className={styles.cancelButton}
-                        onClick={onClose}
-                        disabled={isSubmitting}
-                    >
-                        Отмена
-                    </button>
-                    <button
-                        className={`${styles.submitButton} btn-primary`}
+                        className={`${styles.buttonSubmit} btn-primary`}
                         onClick={handleSubmit}
                         disabled={isSubmitting}
                     >
