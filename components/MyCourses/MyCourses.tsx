@@ -65,8 +65,6 @@ export default function MyCourses() {
             const response = await apiFetch<{ user: UserData }>("/users/me");
             const selectedCourses = response.user.selectedCourses || [];
 
-            console.log("📋 Курсы пользователя:", selectedCourses);
-
             if (!selectedCourses || selectedCourses.length === 0) {
                 setCourses([]);
                 return;
@@ -90,29 +88,12 @@ export default function MyCourses() {
                         }>;
                     }>(`/users/me/progress?courseId=${courseId}`);
 
-                    console.log(
-                        `📊 Прогресс курса ${courseId}:`,
-                        progressResponse,
-                    );
-
                     // Вычисляем прогресс по выбранным тренировкам
                     const totalWorkouts = course.workouts?.length || 0;
                     const workoutsProgress =
                         progressResponse.workoutsProgress || [];
 
-                    console.log(
-                        `📊 Всего тренировок в курсе: ${totalWorkouts}`,
-                    );
-                    console.log(
-                        `📊 Записей в workoutsProgress (выбрано): ${workoutsProgress.length}`,
-                    );
-
                     workoutsProgress.forEach((wp, index) => {
-                        console.log(`  🏋️ Тренировка ${index + 1}:`, {
-                            workoutId: wp.workoutId,
-                            workoutCompleted: wp.workoutCompleted,
-                            progressData: wp.progressData,
-                        });
                     });
 
                     const completedWorkouts = workoutsProgress.filter(
@@ -129,10 +110,6 @@ export default function MyCourses() {
                               )
                             : 0;
 
-                    console.log(
-                        `📈 Завершено: ${completedWorkouts}/${selectedWorkoutsCount} = ${progress}%`,
-                    );
-
                     course.progress = progress;
                     coursesData.push(course);
                     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -141,7 +118,6 @@ export default function MyCourses() {
                 }
             }
 
-            console.log("✅ Загруженные курсы:", coursesData);
             setCourses(coursesData);
         } catch (err: unknown) {
             console.error("Ошибка загрузки курсов:", err);
@@ -164,7 +140,6 @@ export default function MyCourses() {
     useEffect(() => {
         const handleVisibilityChange = () => {
             if (document.visibilityState === "visible" && token && !loading) {
-                console.log("🔄 Страница стала видимой, обновляем данные");
                 fetchMyCourses(true);
             }
         };

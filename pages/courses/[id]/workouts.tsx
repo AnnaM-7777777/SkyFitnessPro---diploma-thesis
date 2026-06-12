@@ -47,15 +47,35 @@ export default function WorkoutsPage() {
 
         const fetchWorkouts = async () => {
             try {
-                // Загружаем данные курса
                 const courseData = await apiFetch<{
                     nameRU: string;
                     nameEN: string;
                 }>(`/courses/${courseId}`);
                 setCourseName(courseData.nameRU || courseData.nameEN || "Курс");
 
-                const data = await apiFetch<Workout[]>(
+                let data = await apiFetch<Workout[]>(
                     `/courses/${courseId}/workouts`,
+                );
+
+                // Если у тренировок нет video, загружаем полную информацию
+                data = await Promise.all(
+                    data.map(async (workout) => {
+                        if (!workout.video) {
+                            try {
+                                const fullWorkout = await apiFetch<Workout>(
+                                    `/workouts/${workout._id}`,
+                                );
+                                return { ...workout, ...fullWorkout };
+                            } catch (err) {
+                                console.error(
+                                    `Не удалось загрузить тренировку ${workout._id}:`,
+                                    err,
+                                );
+                                return workout;
+                            }
+                        }
+                        return workout;
+                    }),
                 );
 
                 const selectedWorkoutsJson = sessionStorage.getItem(
@@ -101,12 +121,10 @@ export default function WorkoutsPage() {
             }>(`/users/me/progress?courseId=${courseIdStr}`);
 
             const workoutsWithProgress = workoutsData.map((workout) => {
-                // Проверка на undefined
                 const workoutsProgress = progressData.workoutsProgress || [];
 
                 const workoutProgress = workoutsProgress.find(
-                    (wp: { workoutId: string; workoutCompleted: boolean }) =>
-                        wp.workoutId === workout._id,
+                    (wp) => wp.workoutId === workout._id,
                 );
 
                 if (workoutProgress && workoutProgress.progressData) {
@@ -134,12 +152,12 @@ export default function WorkoutsPage() {
                     );
 
                     return {
-                        ...workout,
+                        ...workout, // Сохраняем все поля, включая video
                         exerciseProgress,
                     };
                 }
 
-                return workout;
+                return workout; // Возвращаем оригинальный объект с video
             });
 
             setWorkouts(workoutsWithProgress);
@@ -161,10 +179,27 @@ export default function WorkoutsPage() {
     }, [selected, workouts]);
 
     const getYouTubeId = (url: string) => {
-        const match = url.match(
-            /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/,
-        );
-        return match ? match[1] : null;
+        if (!url) return null;
+
+        // Если это уже embed URL - возвращаем как есть
+        if (url.includes("/embed/")) {
+            return url;
+        }
+
+        // Если это watch URL - извлекаем ID
+        const patterns = [
+            /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^"&?\/\s]{11})/,
+            /youtube\.com\/shorts\/([^"&?\/\s]{11})/,
+        ];
+
+        for (const pattern of patterns) {
+            const match = url.match(pattern);
+            if (match) {
+                return `https://www.youtube.com/embed/${match[1]}`;
+            }
+        }
+
+        return null;
     };
 
     // Обработчик клика по кнопке "Заполнить прогресс"
@@ -295,12 +330,17 @@ export default function WorkoutsPage() {
                         <div className={styles.videoWrapper}>
                             {videoId ? (
                                 <iframe
-                                    src={`https://www.youtube.com/embed/${videoId}`}
+                                    src={videoId}
                                     title={workout.name}
                                     frameBorder="0"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                     allowFullScreen
                                     className={styles.video}
+                                    onError={() => {
+                                        console.error(
+                                            `❌ Видео "${workout.name}" не загрузилось`,
+                                        );
+                                    }}
                                 />
                             ) : (
                                 <div className={styles.videoPlaceholder}>
@@ -311,7 +351,9 @@ export default function WorkoutsPage() {
 
                         {/* Упражнения с прогрессом */}
                         <div className={styles.exercisesBlock}>
-                            <h3 className={styles.exercisesTitle}>{workout.name}</h3>
+                            <h3 className={styles.exercisesTitle}>
+                                {workout.name}
+                            </h3>
 
                             <div className={styles.exercisesList}>
                                 {workout.exercises.map((exercise, index) => {
