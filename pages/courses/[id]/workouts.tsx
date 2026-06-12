@@ -322,9 +322,7 @@ export default function WorkoutsPage() {
                     <div
                         key={workout._id}
                         ref={isSelected ? selectedRef : null}
-                        className={`${styles.workoutBlock} ${
-                            isSelected ? styles.workoutBlockSelected : ""
-                        }`}
+                        className={styles.workoutBlock}
                     >
                         {/* Видео */}
                         <div className={styles.videoWrapper}>
