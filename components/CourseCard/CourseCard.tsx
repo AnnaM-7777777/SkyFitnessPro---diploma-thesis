@@ -138,7 +138,7 @@ export default function CourseCard({ course }: CourseCardProps) {
                 err.message.includes("уже был добавлен")
             ) {
                 setIsAdded(true);
-                
+
                 sessionStorage.removeItem("user_data_cache"); // Очищаем кэш
 
                 return;
@@ -168,7 +168,7 @@ export default function CourseCard({ course }: CourseCardProps) {
             setIsAdded(false); // Мгновенно меняем кнопку на "+"
 
             sessionStorage.removeItem("user_data_cache");
-            
+
             setToast({
                 message: "Курс удалён из профиля",
                 type: "success",
@@ -315,6 +315,7 @@ export default function CourseCard({ course }: CourseCardProps) {
             {/* Toast-уведомление */}
             {toast && (
                 <Toast
+                    key={toast.message}
                     message={toast.message}
                     type={toast.type}
                     onClose={() => setToast(null)}

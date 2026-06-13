@@ -527,6 +527,7 @@ export default function MyCourses() {
             {/* Toast уведомление */}
             {toast && (
                 <Toast
+                    key={toast.message}
                     message={toast.message}
                     type={toast.type}
                     onClose={() => setToast(null)}
