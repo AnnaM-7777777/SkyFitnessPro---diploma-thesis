@@ -23,25 +23,17 @@ export default function Toast({
         // Автоматическое закрытие
         const timer = setTimeout(() => {
             setIsVisible(false);
-            setTimeout(onClose, 300); // Ждём окончания анимации
+            setTimeout(onClose, 300);
         }, duration);
 
         return () => clearTimeout(timer);
-    }, [onClose, duration]);
+    }, [duration]);
 
     return (
         <div
             className={`${styles.toast} ${styles[`toast__${type}`]} ${isVisible ? styles.toast_visible : ""}`}
         >
             <span className={styles.toast__message}>{message}</span>
-            <button
-                className={styles.toast__close}
-                onClick={() => {
-                    setIsVisible(false);
-                    setTimeout(onClose, 300);
-                }}
-                aria-label="Закрыть"
-            ></button>
         </div>
     );
 }

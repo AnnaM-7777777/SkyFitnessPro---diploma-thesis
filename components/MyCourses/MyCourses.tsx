@@ -8,6 +8,7 @@ import type { Course } from "@/types/course";
 import courseStyles from "@/components/CourseCard/CourseCard.module.css";
 import styles from "./MyCourses.module.css";
 import WorkoutSelectionModal from "@/components/WorkoutSelectionModal/WorkoutSelectionModal";
+import Toast from "@/components/Toast/Toast";
 
 type UserData = {
     email: string;
@@ -56,6 +57,10 @@ export default function MyCourses() {
         null,
     );
     const [isNavigating, setIsNavigating] = useState(false);
+    const [toast, setToast] = useState<{
+        message: string;
+        type: "error" | "success";
+    } | null>(null);
 
     // Функция загрузки курсов (вынесена отдельно)
     const fetchMyCourses = async (isRefresh = false) => {
@@ -278,13 +283,43 @@ export default function MyCourses() {
     };
 
     const handleRemoveCourse = async (courseId: string) => {
+        // Сбрасываем кастомный курсор сразу при клике
+        setShowCustomCursor(false);
+
         try {
             await apiFetch(`/users/me/courses/${courseId}`, {
                 method: "DELETE",
             });
+
             setCourses(courses.filter((c) => c._id !== courseId));
+
+            setToast({
+                message: "Курс удалён из профиля",
+                type: "success",
+            });
+            setTimeout(() => setToast(null), 3000);
         } catch (err) {
+            if (
+                err instanceof Error &&
+                err.message.includes("не был добавлен")
+            ) {
+                setCourses(courses.filter((c) => c._id !== courseId));
+
+                setToast({
+                    message: "Курс удалён из профиля",
+                    type: "success",
+                });
+                setTimeout(() => setToast(null), 3000);
+                return;
+            }
+
             console.error("Ошибка удаления курса:", err);
+
+            setToast({
+                message: "Не удалось удалить курс",
+                type: "error",
+            });
+            setTimeout(() => setToast(null), 3000);
         }
     };
 
@@ -486,6 +521,15 @@ export default function MyCourses() {
                         setShowWorkoutModal(false);
                         setSelectedCourseId(null);
                     }}
+                />
+            )}
+
+            {/* Toast уведомление */}
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
                 />
             )}
         </>

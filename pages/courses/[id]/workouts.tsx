@@ -4,7 +4,9 @@ import Image from "next/image";
 import Header from "@/components/Header/Header";
 import { apiFetch } from "@/libs/apiConfig";
 import ProgressModal from "@/components/ProgressModal/ProgressModal";
-import SuccessModal from "@/components/SuccessModal/SuccessModal";
+import Modal, {
+    ModalType,
+} from "@/components/ModalUniversalNotifications/ModalUniversalNotifications";
 import styles from "./WorkoutsPage.module.css";
 
 interface Exercise {
@@ -36,10 +38,17 @@ export default function WorkoutsPage() {
     const [loading, setLoading] = useState(true);
     const [activeWorkout, setActiveWorkout] =
         useState<WorkoutWithProgress | null>(null);
-    const [showSuccessModal, setShowSuccessModal] = useState(false);
     const selectedRef = useRef<HTMLDivElement | null>(null);
     const hasLoaded = useRef(false);
     const [courseName, setCourseName] = useState<string>("");
+    const [modal, setModal] = useState<{
+        type: ModalType;
+        title: string;
+        message?: string;
+        onConfirm?: () => void;
+        autoClose?: number;
+        icon?: string;
+    } | null>(null);
 
     useEffect(() => {
         if (!courseId || hasLoaded.current) return;
@@ -204,19 +213,16 @@ export default function WorkoutsPage() {
 
     // Обработчик клика по кнопке "Заполнить прогресс"
     const handleProgressClick = async (workout: WorkoutWithProgress) => {
-        // Если упражнения уже загружены и есть
         if (workout.exercises && workout.exercises.length > 0) {
             setActiveWorkout(workout);
             return;
         }
 
-        // Загружаем полную тренировку
         try {
             const fullWorkout = await apiFetch<Workout>(
                 `/workouts/${workout._id}`,
             );
 
-            // Сохраняем упражнения в state
             setWorkouts((prev) =>
                 prev.map((w) =>
                     w._id === workout._id
@@ -225,40 +231,45 @@ export default function WorkoutsPage() {
                 ),
             );
 
-            // Если упражнений нет — просто отмечаем как завершённую
             if (!fullWorkout.exercises || fullWorkout.exercises.length === 0) {
-                if (
-                    confirm(
-                        "У этой тренировки нет упражнений. Отметить как завершённую?",
-                    )
-                ) {
-                    await apiFetch(
-                        `/courses/${courseId}/workouts/${workout._id}`,
-                        {
-                            method: "PATCH",
-                            body: JSON.stringify({ progressData: [] }),
-                        },
-                    );
-                    alert("Тренировка отмечена как завершённая!");
-                    handleProgressSaved();
-                }
+                await apiFetch(`/courses/${courseId}/workouts/${workout._id}`, {
+                    method: "PATCH",
+                    body: JSON.stringify({ progressData: [] }),
+                });
+
+                setModal({
+                    type: "success",
+                    title: "Тренировка отмечена как завершённая!",
+                    autoClose: 2000,
+                });
+
+                handleProgressSaved();
                 return;
             }
 
-            // Иначе открываем модалку с упражнениями
             setActiveWorkout({
                 ...workout,
                 exercises: fullWorkout.exercises,
             });
         } catch (err) {
-            console.error("Ошибка загрузки упражнений:", err);
-            alert("Не удалось загрузить упражнения");
+            setModal({
+                type: "error",
+                title: "Ошибка",
+                message: "Не удалось загрузить упражнения",
+                autoClose: 3000,
+            });
         }
     };
 
     const handleProgressSaved = () => {
-        setShowSuccessModal(true);
         setActiveWorkout(null);
+
+        // Показываем модалку успеха
+        setModal({
+            type: "success",
+            title: "Ваш прогресс засчитан!",
+            autoClose: 2000,
+        });
 
         // Перезагружаем прогресс через 1.5 секунды
         setTimeout(async () => {
@@ -267,7 +278,6 @@ export default function WorkoutsPage() {
                     `/courses/${courseId}/workouts`,
                 );
 
-                // Применяем фильтрацию из sessionStorage
                 const selectedWorkoutsJson = sessionStorage.getItem(
                     `selected_workouts_${courseId}`,
                 );
@@ -295,85 +305,66 @@ export default function WorkoutsPage() {
         workoutId: string,
         exercisesCount: number,
     ) => {
-        if (
-            confirm(
-                "Сбросить прогресс этой тренировки? Это действие нельзя отменить.",
-            )
-        ) {
-            try {
-                const emptyProgress = Array(exercisesCount).fill(0);
+        setModal({
+            type: "confirm",
+            title: "Сбросить прогресс?",
+            message: "Это действие нельзя отменить. Вы уверены?",
+            onConfirm: async () => {
+                try {
+                    const emptyProgress = Array(exercisesCount).fill(0);
 
-                await apiFetch(`/courses/${courseId}/workouts/${workoutId}`, {
-                    method: "PATCH",
-                    body: JSON.stringify({ progressData: emptyProgress }),
-                });
-
-                // Проверяем прогресс через новый запрос к API
-                if (courseId) {
-                    const selectedWorkoutsJson = sessionStorage.getItem(
-                        `selected_workouts_${courseId}`,
+                    await apiFetch(
+                        `/courses/${courseId}/workouts/${workoutId}`,
+                        {
+                            method: "PATCH",
+                            body: JSON.stringify({
+                                progressData: emptyProgress,
+                            }),
+                        },
                     );
 
-                    if (selectedWorkoutsJson) {
-                        const selectedIds: string[] =
-                            JSON.parse(selectedWorkoutsJson);
+                    setModal({
+                        type: "success",
+                        title: "Ваш прогресс сброшен!",
+                        autoClose: 2000,
+                        icon: "/img/info.svg",
+                    });
 
-                        // Запрашиваем свежий прогресс
-                        const progressResponse = await apiFetch<{
-                            workoutsProgress?: Array<{
-                                workoutId: string;
-                                workoutCompleted: boolean;
-                                progressData: number[];
-                            }>;
-                        }>(`/users/me/progress?courseId=${courseId}`);
+                    // Перезагрузка прогресса
+                    if (courseId) {
+                        const data = await apiFetch<Workout[]>(
+                            `/courses/${courseId}/workouts`,
+                        );
 
-                        const workoutsProgress =
-                            progressResponse.workoutsProgress || [];
+                        const selectedWorkoutsJson = sessionStorage.getItem(
+                            `selected_workouts_${courseId}`,
+                        );
 
-                        // Проверяем, есть ли прогресс хотя бы у одной выбранной тренировки
-                        const hasAnyProgress = selectedIds.some((id) => {
-                            const wp = workoutsProgress.find(
-                                (p) => p.workoutId === id,
-                            );
-                            return (
-                                wp &&
-                                wp.progressData &&
-                                wp.progressData.some((val) => val > 0)
-                            );
-                        });
+                        let workoutsToUse = data;
 
-                        // Если прогресса больше нет — очищаем sessionStorage
-                        if (!hasAnyProgress) {
-                            sessionStorage.removeItem(
-                                `selected_workouts_${courseId}`,
+                        if (selectedWorkoutsJson) {
+                            const selectedIds: string[] =
+                                JSON.parse(selectedWorkoutsJson);
+                            workoutsToUse = data.filter((w) =>
+                                selectedIds.includes(w._id),
                             );
                         }
-                    }
 
-                    // Перезагружаем тренировки с прогрессом
-                    const data = await apiFetch<Workout[]>(
-                        `/courses/${courseId}/workouts`,
-                    );
-
-                    let workoutsToUse = data;
-
-                    if (selectedWorkoutsJson) {
-                        const selectedIds: string[] =
-                            JSON.parse(selectedWorkoutsJson);
-                        workoutsToUse = data.filter((w) =>
-                            selectedIds.includes(w._id),
+                        await loadProgressForAllWorkouts(
+                            workoutsToUse,
+                            courseId as string,
                         );
                     }
-
-                    await loadProgressForAllWorkouts(
-                        workoutsToUse,
-                        courseId as string,
-                    );
+                } catch (err) {
+                    setModal({
+                        type: "error",
+                        title: "Ошибка",
+                        message: "Не удалось сбросить прогресс",
+                        autoClose: 3000,
+                    });
                 }
-            } catch (err) {
-                console.error("Ошибка сброса прогресса:", err);
-            }
-        }
+            },
+        });
     };
 
     if (loading) {
@@ -536,8 +527,17 @@ export default function WorkoutsPage() {
             )}
 
             {/* Модалка успеха */}
-            {showSuccessModal && (
-                <SuccessModal onClose={() => setShowSuccessModal(false)} />
+            {modal && (
+                <Modal
+                    type={modal.type}
+                    title={modal.title}
+                    message={modal.message}
+                    onConfirm={modal.onConfirm}
+                    onCancel={() => setModal(null)}
+                    onClose={() => setModal(null)}
+                    autoClose={modal.autoClose}
+                    icon={modal.icon}
+                />
             )}
         </div>
     );

@@ -173,7 +173,6 @@
 }
 
 .blockButton {
-    background-color: var(--bg-secondary);
     flex-shrink: 0;
     padding-top: 20px;
 }
