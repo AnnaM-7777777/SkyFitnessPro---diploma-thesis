@@ -9,6 +9,7 @@ import { apiFetch } from "@/libs/apiConfig";
 import { MOCK_COURSES } from "@/libs/mockCourses";
 import LoginModal from "../components/Auth/LoginModal";
 import RegisterModal from "../components/Auth/RegisterModal";
+import Toast from "@/components/Toast/Toast";
 
 export default function HomePage() {
     const [courses, setCourses] = useState<Course[]>([]);
@@ -19,6 +20,10 @@ export default function HomePage() {
         null,
     );
     const [showScrollButton, setShowScrollButton] = useState(false);
+    const [toast, setToast] = useState<{
+        message: string;
+        type: "error" | "success";
+    } | null>(null);
     const router = useRouter();
 
     // Следим за изменением параметров в адресной строке
@@ -42,6 +47,13 @@ export default function HomePage() {
                 setCourses(Array.isArray(data) ? data : []);
             } catch (err) {
                 setCourses(MOCK_COURSES as Course[]);
+
+                // Показываем уведомление об ошибке
+                setToast({
+                    message: "Не удалось загрузить курсы. Показаны примеры.",
+                    type: "error",
+                });
+                setTimeout(() => setToast(null), 3000);
             } finally {
                 setLoading(false);
             }
@@ -55,6 +67,9 @@ export default function HomePage() {
             // Показываем кнопку после 300px прокрутки
             setShowScrollButton(window.scrollY > 300);
         };
+
+        // Проверяем начальную позицию
+        handleScroll();
 
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
@@ -70,6 +85,7 @@ export default function HomePage() {
                     <h1 className={styles.text__title}>
                         Начните заниматься спортом и улучшите качество жизни
                     </h1>
+                    
                     <div className={styles.text__sloganWrapper}>
                         <div className={styles.text__slogan}>
                             <p className={styles.text__sloganTitle}>
@@ -125,6 +141,15 @@ export default function HomePage() {
                 <div className={styles.modalWrapper}>
                     <RegisterModal onClose={closeModal} />
                 </div>
+            )}
+
+            {/* Toast уведомление */}
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                />
             )}
         </div>
     );

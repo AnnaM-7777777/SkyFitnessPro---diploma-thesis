@@ -24,10 +24,10 @@ type User = {
 type AuthContextType = {
     user: User;
     token: string | null;
+    isLoading: boolean; // ✅ Оставили только одно состояние
     login: (email: string, password: string) => Promise<void>;
     register: (email: string, password: string, name?: string) => Promise<void>;
     logout: () => void;
-    isLoading: boolean;
 };
 
 // Функция проверки пароля по требованиям фитнес-API
@@ -37,13 +37,12 @@ const validateFitnessPassword = (password: string): string | null => {
     if (!/[A-ZА-ЯЁ]/.test(password))
         return "Пароль должен содержать хотя бы одну заглавную букву";
 
-    // Считаем спецсимволы
     const specialChars = password.match(/[^a-zA-Z0-9а-яА-ЯёЁ\s]/g);
     if (!specialChars || specialChars.length < 2) {
         return "Пароль должен содержать минимум 2 спецсимвола (например: @!#?)";
     }
 
-    return null; // Ошибок нет
+    return null;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -51,17 +50,19 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User>(null);
     const [token, setToken] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true); // ✅ Одно состояние
     const router = useRouter();
 
+    // ✅ Один useEffect для проверки localStorage
     useEffect(() => {
-        const savedToken = localStorage.getItem("fitness_token");
-        const savedUser = localStorage.getItem("fitness_user");
+        const fitnessToken = localStorage.getItem("fitness_token");
+        const fitnessUser = localStorage.getItem("fitness_user");
 
-        if (savedToken && savedUser) {
-            setToken(savedToken);
-            setUser(JSON.parse(savedUser));
+        if (fitnessToken && fitnessUser) {
+            setToken(fitnessToken);
+            setUser(JSON.parse(fitnessUser));
         }
+
         setIsLoading(false);
     }, []);
 
@@ -97,8 +98,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
 
             router.push("/");
-        } catch (err: any) {
-            throw new Error(err.message || "Ошибка входа");
+        } catch (err: unknown) {
+            // ✅ Убрали any
+            const message = err instanceof Error ? err.message : "Ошибка входа";
+            throw new Error(message);
         }
     };
 
@@ -106,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Проверяем пароль перед отправкой
         const passwordError = validateFitnessPassword(password);
         if (passwordError) {
-            throw new Error(passwordError); // Покажем это пользователю в Toast
+            throw new Error(passwordError);
         }
 
         try {
@@ -144,8 +147,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
 
             router.push("/");
-        } catch (err: any) {
-            throw new Error(err.message || "Ошибка регистрации");
+        } catch (err: unknown) {
+            // ✅ Убрали any
+            const message =
+                err instanceof Error ? err.message : "Ошибка регистрации";
+            throw new Error(message);
         }
     };
 
@@ -159,7 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return (
         <AuthContext.Provider
-            value={{ user, token, login, register, logout, isLoading }}
+            value={{ user, token, isLoading, login, register, logout }}
         >
             {children}
         </AuthContext.Provider>
