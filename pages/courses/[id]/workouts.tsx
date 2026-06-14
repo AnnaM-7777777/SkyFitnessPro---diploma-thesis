@@ -1,8 +1,8 @@
 import { useRouter } from "next/router";
-import { useEffect, useState, useRef } from "react";
-import Image from "next/image";
+import { useEffect, useState, useRef, useMemo } from "react";
 import Header from "@/components/Header/Header";
 import { apiFetch } from "@/libs/apiConfig";
+import { useAuth } from "@/context/AuthContext";
 import ProgressModal from "@/components/ProgressModal/ProgressModal";
 import Modal, {
     ModalType,
@@ -33,13 +33,20 @@ interface WorkoutWithProgress extends Workout {
 
 export default function WorkoutsPage() {
     const router = useRouter();
-    const { id: courseId, selected } = router.query;
+    const { id, selected } = router.query;
+    const { token, isLoading } = useAuth();
+
+    // Вычисляем courseId один раз через useMemo
+    const courseId = useMemo(() => {
+        if (!id) return "";
+        return Array.isArray(id) ? id[0] : id;
+    }, [id]);
+
     const [workouts, setWorkouts] = useState<WorkoutWithProgress[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeWorkout, setActiveWorkout] =
         useState<WorkoutWithProgress | null>(null);
     const selectedRef = useRef<HTMLDivElement | null>(null);
-    const hasLoaded = useRef(false);
     const [courseName, setCourseName] = useState<string>("");
     const [modal, setModal] = useState<{
         type: ModalType;
@@ -50,11 +57,19 @@ export default function WorkoutsPage() {
         icon?: string;
     } | null>(null);
 
+    // Защита от неавторизованного доступа
     useEffect(() => {
-        if (!courseId || hasLoaded.current) return;
-        hasLoaded.current = true;
+        if (!isLoading && !token) {
+            router.replace("/?modal=login");
+        }
+    }, [isLoading, token, router]);
+
+    // Загрузка тренировок — сбрасываем при смене courseId
+    useEffect(() => {
+        if (!courseId || !token) return;
 
         const fetchWorkouts = async () => {
+            setLoading(true);
             try {
                 const courseData = await apiFetch<{
                     nameRU: string;
@@ -62,13 +77,12 @@ export default function WorkoutsPage() {
                 }>(`/courses/${courseId}`);
                 setCourseName(courseData.nameRU || courseData.nameEN || "Курс");
 
-                let data = await apiFetch<Workout[]>(
+                const rawData = await apiFetch<Workout[]>(
                     `/courses/${courseId}/workouts`,
                 );
 
-                // Если у тренировок нет video, загружаем полную информацию
-                data = await Promise.all(
-                    data.map(async (workout) => {
+                const data = await Promise.all(
+                    rawData.map(async (workout) => {
                         if (!workout.video) {
                             try {
                                 const fullWorkout = await apiFetch<Workout>(
@@ -101,10 +115,7 @@ export default function WorkoutsPage() {
                     );
                 }
 
-                await loadProgressForAllWorkouts(
-                    workoutsToUse,
-                    courseId as string,
-                );
+                await loadProgressForAllWorkouts(workoutsToUse, courseId);
             } catch (err) {
                 console.error("Ошибка загрузки тренировок:", err);
             } finally {
@@ -113,7 +124,7 @@ export default function WorkoutsPage() {
         };
 
         fetchWorkouts();
-    }, [courseId]);
+    }, [courseId, token]);
 
     // Загрузка прогресса для всех тренировок
     const loadProgressForAllWorkouts = async (
@@ -136,7 +147,12 @@ export default function WorkoutsPage() {
                     (wp) => wp.workoutId === workout._id,
                 );
 
-                if (workoutProgress && workoutProgress.progressData) {
+                // Проверяем, что exercises существует
+                if (
+                    workoutProgress &&
+                    workoutProgress.progressData &&
+                    workout.exercises
+                ) {
                     const exerciseProgress = workout.exercises.map(
                         (exercise, index) => {
                             const userProgress =
@@ -161,18 +177,38 @@ export default function WorkoutsPage() {
                     );
 
                     return {
-                        ...workout, // Сохраняем все поля, включая video
+                        ...workout,
                         exerciseProgress,
                     };
                 }
 
-                return workout; // Возвращаем оригинальный объект с video
+                return workout;
             });
 
             setWorkouts(workoutsWithProgress);
         } catch (err) {
             console.error("Ошибка загрузки прогресса:", err);
         }
+    };
+
+    // Вынесенная функция перезагрузки прогресса (убираем дублирование)
+    const reloadProgress = async () => {
+        if (!courseId) return;
+
+        const data = await apiFetch<Workout[]>(`/courses/${courseId}/workouts`);
+
+        const selectedWorkoutsJson = sessionStorage.getItem(
+            `selected_workouts_${courseId}`,
+        );
+
+        let workoutsToUse = data;
+
+        if (selectedWorkoutsJson) {
+            const selectedIds: string[] = JSON.parse(selectedWorkoutsJson);
+            workoutsToUse = data.filter((w) => selectedIds.includes(w._id));
+        }
+
+        await loadProgressForAllWorkouts(workoutsToUse, courseId);
     };
 
     // Автопрокрутка к выбранной тренировке
@@ -190,12 +226,10 @@ export default function WorkoutsPage() {
     const getYouTubeId = (url: string) => {
         if (!url) return null;
 
-        // Если это уже embed URL - возвращаем как есть
         if (url.includes("/embed/")) {
             return url;
         }
 
-        // Если это watch URL - извлекаем ID
         const patterns = [
             /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^"&?\/\s]{11})/,
             /youtube\.com\/shorts\/([^"&?\/\s]{11})/,
@@ -264,39 +298,14 @@ export default function WorkoutsPage() {
     const handleProgressSaved = () => {
         setActiveWorkout(null);
 
-        // Показываем модалку успеха
         setModal({
             type: "success",
             title: "Ваш прогресс засчитан!",
             autoClose: 2000,
         });
 
-        // Перезагружаем прогресс через 1.5 секунды
         setTimeout(async () => {
-            if (courseId) {
-                const data = await apiFetch<Workout[]>(
-                    `/courses/${courseId}/workouts`,
-                );
-
-                const selectedWorkoutsJson = sessionStorage.getItem(
-                    `selected_workouts_${courseId}`,
-                );
-
-                let workoutsToUse = data;
-
-                if (selectedWorkoutsJson) {
-                    const selectedIds: string[] =
-                        JSON.parse(selectedWorkoutsJson);
-                    workoutsToUse = data.filter((w) =>
-                        selectedIds.includes(w._id),
-                    );
-                }
-
-                await loadProgressForAllWorkouts(
-                    workoutsToUse,
-                    courseId as string,
-                );
-            }
+            await reloadProgress();
         }, 1500);
     };
 
@@ -330,31 +339,7 @@ export default function WorkoutsPage() {
                         icon: "/img/info.svg",
                     });
 
-                    // Перезагрузка прогресса
-                    if (courseId) {
-                        const data = await apiFetch<Workout[]>(
-                            `/courses/${courseId}/workouts`,
-                        );
-
-                        const selectedWorkoutsJson = sessionStorage.getItem(
-                            `selected_workouts_${courseId}`,
-                        );
-
-                        let workoutsToUse = data;
-
-                        if (selectedWorkoutsJson) {
-                            const selectedIds: string[] =
-                                JSON.parse(selectedWorkoutsJson);
-                            workoutsToUse = data.filter((w) =>
-                                selectedIds.includes(w._id),
-                            );
-                        }
-
-                        await loadProgressForAllWorkouts(
-                            workoutsToUse,
-                            courseId as string,
-                        );
-                    }
+                    await reloadProgress();
                 } catch (err) {
                     setModal({
                         type: "error",
@@ -366,6 +351,21 @@ export default function WorkoutsPage() {
             },
         });
     };
+
+    // Показываем loading при проверке авторизации
+    if (isLoading) {
+        return (
+            <div className={styles.container}>
+                <Header showTitle={false} />
+                <div className={styles.loading}>Проверка авторизации...</div>
+            </div>
+        );
+    }
+
+    // Если не авторизован — не рендерим
+    if (!token) {
+        return null;
+    }
 
     if (loading) {
         return (
@@ -403,7 +403,6 @@ export default function WorkoutsPage() {
                         ref={isSelected ? selectedRef : null}
                         className={styles.workoutBlock}
                     >
-                        {/* Видео */}
                         <div className={styles.videoWrapper}>
                             {videoId ? (
                                 <iframe
@@ -426,14 +425,13 @@ export default function WorkoutsPage() {
                             )}
                         </div>
 
-                        {/* Упражнения с прогрессом */}
                         <div className={styles.exercisesBlock}>
                             <h3 className={styles.exercisesTitle}>
                                 {workout.name}
                             </h3>
 
                             <div className={styles.exercisesList}>
-                                {workout.exercises.map((exercise, index) => {
+                                {workout.exercises?.map((exercise, index) => {
                                     const progress = workout.exerciseProgress
                                         ? workout.exerciseProgress[index]
                                               ?.progress || 0
@@ -450,7 +448,6 @@ export default function WorkoutsPage() {
                                                 {exercise.name} {progress}%
                                             </span>
 
-                                            {/* Прогресс бар */}
                                             <div
                                                 className={
                                                     styles.progressContainer
@@ -470,7 +467,6 @@ export default function WorkoutsPage() {
                                 })}
                             </div>
 
-                            {/* Блок кнопок прогресса */}
                             <div className={styles.progressButtonsBlock}>
                                 <button
                                     className={`${styles.progressButton} btn-primary`}
@@ -481,7 +477,6 @@ export default function WorkoutsPage() {
                                         : "Заполнить свой прогресс"}
                                 </button>
 
-                                {/* Кнопка сброса — только если есть прогресс */}
                                 {hasProgress && (
                                     <button
                                         className={`${styles.resetButton} btn-secondary`}
@@ -503,10 +498,9 @@ export default function WorkoutsPage() {
                 );
             })}
 
-            {/* Модалка прогресса */}
             {activeWorkout && courseId && (
                 <ProgressModal
-                    courseId={courseId as string}
+                    courseId={courseId}
                     workoutId={activeWorkout._id}
                     exercises={activeWorkout.exercises}
                     initialProgress={
@@ -526,7 +520,6 @@ export default function WorkoutsPage() {
                 />
             )}
 
-            {/* Модалка успеха */}
             {modal && (
                 <Modal
                     type={modal.type}

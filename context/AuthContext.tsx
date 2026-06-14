@@ -24,7 +24,7 @@ type User = {
 type AuthContextType = {
     user: User;
     token: string | null;
-    isLoading: boolean; // ✅ Оставили только одно состояние
+    isLoading: boolean;
     login: (email: string, password: string) => Promise<void>;
     register: (email: string, password: string, name?: string) => Promise<void>;
     logout: () => void;
@@ -50,10 +50,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User>(null);
     const [token, setToken] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(true); // ✅ Одно состояние
+    const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
-    // ✅ Один useEffect для проверки localStorage
+    // Один useEffect для проверки localStorage
     useEffect(() => {
         const fitnessToken = localStorage.getItem("fitness_token");
         const fitnessUser = localStorage.getItem("fitness_user");
@@ -99,7 +99,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             router.push("/");
         } catch (err: unknown) {
-            // ✅ Убрали any
             const message = err instanceof Error ? err.message : "Ошибка входа";
             throw new Error(message);
         }
@@ -148,7 +147,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             router.push("/");
         } catch (err: unknown) {
-            // ✅ Убрали any
             const message =
                 err instanceof Error ? err.message : "Ошибка регистрации";
             throw new Error(message);

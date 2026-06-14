@@ -72,7 +72,10 @@ export default function MyCourses() {
             }
 
             const response = await apiFetch<{ user: UserData }>("/users/me");
-            const selectedCourses = response.user.selectedCourses || [];
+            const rawSelectedCourses = response.user.selectedCourses || [];
+
+            // Убираем дубликаты через Set
+            const selectedCourses = Array.from(new Set(rawSelectedCourses));
 
             if (!selectedCourses || selectedCourses.length === 0) {
                 setCourses([]);
@@ -157,6 +160,16 @@ export default function MyCourses() {
 
                     await new Promise((resolve) => setTimeout(resolve, 100));
                 } catch (err) {
+                    // Игнорируем прерванные запросы (HMR, переход между страницами)
+                    if (
+                        err instanceof Error &&
+                        (err.message.includes("Failed to fetch") ||
+                            err.message.includes("Abort") ||
+                            err.name === "AbortError")
+                    ) {
+                        return; // Тихо выходим
+                    }
+
                     console.error(`Ошибка загрузки курса ${courseId}:`, err);
                 }
             }
