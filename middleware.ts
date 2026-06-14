@@ -1,3 +1,5 @@
+/* Файл проверяет только локальные роуты. Оставлен если в будущем добавятся API-роуты, будет готовая защита */
+
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
