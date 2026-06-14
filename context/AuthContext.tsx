@@ -53,50 +53,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
-    // Один useEffect для проверки localStorage
+    // Вынесенная функция сохранения сессии (устраняет дублирование)
+    const saveUserSession = (authUser: AuthUser, fitnessToken: string) => {
+        const userData = {
+            _id: authUser._id,
+            email: authUser.login,
+            name: authUser.name,
+            imageUrl: authUser.imageUrl,
+        };
+
+        localStorage.setItem("fitness_token", fitnessToken);
+        localStorage.setItem("fitness_user", JSON.stringify(userData));
+
+        setToken(fitnessToken);
+        setUser(userData);
+    };
+
+    // useEffect с защитой от повреждённого JSON в localStorage
     useEffect(() => {
         const fitnessToken = localStorage.getItem("fitness_token");
         const fitnessUser = localStorage.getItem("fitness_user");
 
         if (fitnessToken && fitnessUser) {
-            setToken(fitnessToken);
-            setUser(JSON.parse(fitnessUser));
+            try {
+                setToken(fitnessToken);
+                setUser(JSON.parse(fitnessUser));
+            } catch (err) {
+                console.error("Ошибка парсинга user из localStorage:", err);
+                // Очищаем повреждённые данные
+                localStorage.removeItem("fitness_token");
+                localStorage.removeItem("fitness_user");
+            }
         }
 
         setIsLoading(false);
     }, []);
 
+    // Двойная авторизация: основной API для профиля, фитнес-API для курсов
     const login = async (email: string, password: string) => {
         try {
-            // 1. Логин в основном API (для профиля)
             const authUser: AuthUser = await authLogin({
                 login: email,
                 password,
             });
 
-            // 2. Логин в фитнес-API (для курсов)
             const fitnessData = await fitnessLogin(email, password);
 
-            // 3. Сохраняем JWT токен от фитнес-API
-            localStorage.setItem("fitness_token", fitnessData.token);
-            localStorage.setItem(
-                "fitness_user",
-                JSON.stringify({
-                    _id: authUser._id,
-                    email: authUser.login,
-                    name: authUser.name,
-                    imageUrl: authUser.imageUrl,
-                }),
-            );
-
-            setToken(fitnessData.token);
-            setUser({
-                _id: authUser._id,
-                email: authUser.login,
-                name: authUser.name,
-                imageUrl: authUser.imageUrl,
-            });
-
+            saveUserSession(authUser, fitnessData.token);
             router.push("/");
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : "Ошибка входа";
@@ -104,47 +107,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    // Двойная авторизация: основной API для профиля, фитнес-API для курсов
     const register = async (email: string, password: string, name?: string) => {
-        // Проверяем пароль перед отправкой
         const passwordError = validateFitnessPassword(password);
         if (passwordError) {
             throw new Error(passwordError);
         }
 
         try {
-            // 1. Регистрация в основном API
             const authUser: AuthUser = await authRegister({
                 login: email,
                 password,
                 name: name || email.split("@")[0],
             });
 
-            // 2. Регистрация в фитнес-API
             await fitnessRegister(email, password);
-
-            // 3. Логин в фитнес-API после регистрации
             const fitnessData = await fitnessLogin(email, password);
 
-            // 4. Сохраняем JWT токен
-            localStorage.setItem("fitness_token", fitnessData.token);
-            localStorage.setItem(
-                "fitness_user",
-                JSON.stringify({
-                    _id: authUser._id,
-                    email: authUser.login,
-                    name: authUser.name,
-                    imageUrl: authUser.imageUrl,
-                }),
-            );
-
-            setToken(fitnessData.token);
-            setUser({
-                _id: authUser._id,
-                email: authUser.login,
-                name: authUser.name,
-                imageUrl: authUser.imageUrl,
-            });
-
+            saveUserSession(authUser, fitnessData.token);
             router.push("/");
         } catch (err: unknown) {
             const message =
