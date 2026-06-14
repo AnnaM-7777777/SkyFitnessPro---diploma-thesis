@@ -4,7 +4,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.322);
+    background-color: var(--bg-overlay);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -170,6 +170,13 @@
     font-weight: 400;
     font-size: 16px;
     line-height: 110%;
+}
+
+.error {
+    color: var(--bg-error);
+    margin-bottom: 34px;
+    font-size: 14px;
+    text-align: center;
 }
 
 .blockButton {

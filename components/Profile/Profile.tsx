@@ -1,4 +1,5 @@
 import { useRouter } from "next/router";
+import { useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
 import styles from "./Profile.module.css";
@@ -6,6 +7,13 @@ import styles from "./Profile.module.css";
 export default function Profile() {
     const router = useRouter();
     const { user, logout, isLoading } = useAuth();
+
+    // Редирект через useEffect
+    useEffect(() => {
+        if (!isLoading && !user) {
+            router.push("/");
+        }
+    }, [user, isLoading, router]);
 
     if (isLoading) {
         return (
@@ -16,7 +24,6 @@ export default function Profile() {
     }
 
     if (!user) {
-        router.push("/");
         return null;
     }
 
@@ -31,17 +38,19 @@ export default function Profile() {
         }
     };
 
+    const getAvatarUrl = (imageUrl?: string): string => {
+        if (!imageUrl) return "/img/avatar.png";
+        if (imageUrl.includes("yandexcloud") || imageUrl.includes("skypro")) {
+            return "/img/avatar.png";
+        }
+        return imageUrl;
+    };
+
     return (
         <div className={styles.profile}>
             <div className={styles.profile__avatar}>
                 <Image
-                    src={
-                        user.imageUrl &&
-                        !user.imageUrl.includes("yandexcloud") &&
-                        !user.imageUrl.includes("skypro")
-                            ? user.imageUrl
-                            : "/img/avatar.png"
-                    }
+                    src={getAvatarUrl(user.imageUrl)}
                     alt={userName}
                     width={197}
                     height={197}

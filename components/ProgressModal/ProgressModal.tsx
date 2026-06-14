@@ -68,7 +68,7 @@ export default function ProgressModal({
         <div className={styles.overlay} onClick={onClose}>
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
                 <h2 className={styles.title}>Мой прогресс</h2>
-                
+
                 <div className={styles.scrollContainer}>
                     <div className={styles.exercisesList}>
                         {exercises.map((exercise, index) => (
@@ -92,6 +92,7 @@ export default function ProgressModal({
                                     }
                                     className={styles.input}
                                     disabled={isSubmitting}
+                                    aria-label={`Прогресс для упражнения: ${exercise.name}`}
                                 />
                             </div>
                         ))}

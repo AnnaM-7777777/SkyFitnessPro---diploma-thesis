@@ -1,13 +1,23 @@
+.header__loading {
+    font-size: 24px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
 .header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     background-color: var(--bg-primary);
     position: sticky;
     top: 0;
     z-index: 10;
     width: 100%;
-    padding: 24px calc(50% - 600px) 60px;
+    padding: 50px calc(50% - 600px) 60px;
     box-sizing: border-box;
 }
 
@@ -18,7 +28,7 @@
     justify-content: center;
 }
 
-.container__text {
+.header__text {
     color: var(--text-primary);
     font-size: 18px;
     margin-top: 15px;
@@ -41,12 +51,11 @@
 }
 
 /* Кнопка профиля */
-.header__profileButton {
+.profileMenu__btn {
     display: flex;
     align-items: center;
     background-color: transparent;
     cursor: pointer;
-    transition: all 0.15s ease;
     border: none;
     border-radius: 30px;
     padding: 12px 16px;
@@ -55,18 +64,18 @@
         transform 0.2s ease;
 }
 
-.header__profileButton:hover {
-    background: var(--bg-hover, #e5e7eb);
+.profileMenu__btn:hover {
+    background: var(--btn-secondary-active);
 }
 
-.header__userAvatar {
+.profileMenu__userAvatar {
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
 }
 
-.header__userName {
+.profileMenu__userName {
     font-size: 24px;
     font-weight: 400;
     line-height: 110%;
@@ -76,12 +85,12 @@
     margin: 0 12px 0 20px;
 }
 
-.header__chevron {
+.profileMenu__chevron {
     transition: transform 0.2s ease;
     color: var(--text-primary);
 }
 
-.header__chevronUp {
+.profileMenu__chevronUp {
     transform: rotate(180deg);
 }
 
@@ -114,25 +123,18 @@
     }
 }
 
-.header__userInfo {
-    font-weight: 400;
-    font-size: 18px;
-    line-height: 110%;
-
-}
-
-.header__userName,
-.header__userEmail {
+.dropdownMenu__userName,
+.dropdownMenu__userEmail {
     font-weight: 400;
     font-size: 18px;
     line-height: 110%;
 }
 
-.header__userEmail {
+.dropdownMenu__userEmail {
     color: var(--text-grey);
     margin-bottom: 24px;
 }
 
-.header__menuButton {
+.dropdownMenu__btn {
     width: 100%;
 }

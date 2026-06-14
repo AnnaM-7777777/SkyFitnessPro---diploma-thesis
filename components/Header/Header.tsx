@@ -53,7 +53,7 @@ export default function Header({ showTitle = true }: HeaderProps) {
 
                 {/* Условный рендеринг заголовка */}
                 {showTitle && (
-                    <p className={styles.container__text}>
+                    <p className={styles.header__text}>
                         Онлайн-тренировки для занятий дома
                     </p>
                 )}
@@ -69,46 +69,28 @@ export default function Header({ showTitle = true }: HeaderProps) {
                     // Пользователь АВТОРИЗОВАН → показываем меню профиля
                     <div className={styles.header__profileMenu} ref={menuRef}>
                         <button
-                            className={styles.header__profileButton}
+                            className={styles.profileMenu__btn}
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                             aria-expanded={isMenuOpen}
                             aria-label="Меню профиля"
                         >
                             {/* Универсальная иконка аватара */}
-                            {/* Стало */}
-                            <div className={styles.header__userAvatar}>
-                                {user.imageUrl &&
-                                !user.imageUrl.includes("yandexcloud") ? (
-                                    <Image
-                                        src={user.imageUrl}
-                                        alt={user.name || "Аватар"}
-                                        width={42}
-                                        height={42}
-                                        style={{
-                                            objectFit: "cover",
-                                            borderRadius: "50%",
-                                        }}
-                                        onError={() => {
-                                            // Если не загрузилось — ничего не делаем, Next.js сам покажет placeholder
-                                        }}
-                                    />
-                                ) : (
-                                    <Image
-                                        src="/img/icon.png"
-                                        alt="Аватар"
-                                        width={42}
-                                        height={42}
-                                        priority
-                                        style={{
-                                            objectFit: "cover",
-                                            borderRadius: "50%",
-                                        }}
-                                    />
-                                )}
+                            <div className={styles.profileMenu__userAvatar}>
+                                <Image
+                                    src="/img/icon.png"
+                                    alt="Аватар"
+                                    width={42}
+                                    height={42}
+                                    priority
+                                    style={{
+                                        objectFit: "cover",
+                                        borderRadius: "50%",
+                                    }}
+                                />
                             </div>
 
                             {/* Имя пользователя */}
-                            <span className={styles.header__userName}>
+                            <span className={styles.profileMenu__userName}>
                                 {user.name ||
                                     user.email?.split("@")[0] ||
                                     "Профиль"}
@@ -116,8 +98,10 @@ export default function Header({ showTitle = true }: HeaderProps) {
 
                             {/* Стрелка */}
                             <svg
-                                className={`${styles.header__chevron} ${
-                                    isMenuOpen ? styles.header__chevronUp : ""
+                                className={`${styles.profileMenu__chevron} ${
+                                    isMenuOpen
+                                        ? styles.profileMenu__chevronUp
+                                        : ""
                                 }`}
                                 width="20"
                                 height="20"
@@ -138,24 +122,24 @@ export default function Header({ showTitle = true }: HeaderProps) {
                         {/* Выпадающее меню профиля */}
                         {isMenuOpen && (
                             <div className={styles.header__dropdownMenu}>
-                                <div className={styles.header__userName}>
+                                <div className={styles.dropdownMenu__userName}>
                                     {user.name || "Пользователь"}
                                 </div>
 
-                                <div className={styles.header__userEmail}>
+                                <div className={styles.dropdownMenu__userEmail}>
                                     {user.email}
                                 </div>
 
                                 <Link
-                                    href="/profile/profile"
-                                    className={`${styles.header__menuButton} btn-primary`}
+                                    href="/profile"
+                                    className={`${styles.dropdownMenu__btn} btn-primary`}
                                     onClick={() => setIsMenuOpen(false)}
                                 >
                                     Мой профиль
                                 </Link>
 
                                 <button
-                                    className={`${styles.header__menuButton} btn-secondary`}
+                                    className={`${styles.dropdownMenu__btn} btn-secondary`}
                                     onClick={handleLogout}
                                 >
                                     Выйти

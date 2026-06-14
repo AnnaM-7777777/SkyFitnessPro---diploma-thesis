@@ -72,7 +72,7 @@ export default function RegisterModal({ onClose }: RegisterModalProps) {
         } catch (err: unknown) {
             // Универсальное сообщение для любой ошибки регистрации
             let message = "Неверные данные. Проверьте почту и пароль";
-            let highlight: "email" | "password" | null = "email";
+            let highlight: "email" | "password" | null = null;
 
             if (err instanceof Error) {
                 const lowerMsg = err.message.toLowerCase();

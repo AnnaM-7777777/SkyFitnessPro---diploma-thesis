@@ -30,6 +30,8 @@ export default function WorkoutSelectionModal({
     // Массив выбранных ID вместо одного
     const [selectedWorkouts, setSelectedWorkouts] = useState<string[]>([]);
 
+    const [error, setError] = useState<string | null>(null);
+
     useEffect(() => {
         const fetchWorkouts = async () => {
             try {
@@ -39,6 +41,7 @@ export default function WorkoutSelectionModal({
                 setWorkouts(data);
             } catch (err) {
                 console.error("Ошибка загрузки тренировок:", err);
+                setError("Не удалось загрузить тренировки");
             } finally {
                 setLoading(false);
             }
@@ -86,7 +89,7 @@ export default function WorkoutSelectionModal({
                 <div className={styles.blockTitle}>
                     <h2 className={styles.title}>Выберите тренировку</h2>
                 </div>
-                
+
                 <div className={styles.scrollContainer}>
                     <div className={styles.workoutList}>
                         {workouts.map((workout) => (
@@ -101,6 +104,7 @@ export default function WorkoutSelectionModal({
                                     )}
                                     onChange={() => handleToggle(workout._id)}
                                     className={styles.checkbox}
+                                    aria-label={`Выбрать тренировку: ${workout.name}`}
                                 />
 
                                 <div className={styles.workoutInfo}>
@@ -116,6 +120,8 @@ export default function WorkoutSelectionModal({
                     </div>
                 </div>
 
+                {error && <div className={styles.error}>{error}</div>}
+                
                 <div className={styles.blockButton}>
                     <button
                         className={`${styles.startButton} btn-primary`}

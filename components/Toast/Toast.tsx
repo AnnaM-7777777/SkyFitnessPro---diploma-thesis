@@ -27,7 +27,7 @@ export default function Toast({
         }, duration);
 
         return () => clearTimeout(timer);
-    }, [duration]);
+    }, [duration, onClose]);
 
     return (
         <div

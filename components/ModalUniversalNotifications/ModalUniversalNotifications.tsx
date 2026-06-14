@@ -40,7 +40,6 @@ export default function Modal({
 
     const handleOverlayClick = () => {
         if (onClose) onClose();
-        if (onCancel) onCancel();
     };
 
     const handleModalClick = (e: React.MouseEvent) => {

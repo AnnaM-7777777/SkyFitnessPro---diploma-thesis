@@ -8,6 +8,7 @@
     --bg-dark-gradient-2: rgba(30, 33, 46, 1);
     --bg-block: rgba(188, 236, 48, 1); /* Фон небольших блоков на странице */
     --bg-error: rgba(219, 0, 48, 1); /* цвет ошибки (текст, бордер, фон) */
+    --bg-overlay: rgba(0, 0, 0, 0.3); /* Полупрозрачный фон для overlay */
 
     /* Кнопки, ссылки */
     --btn-primary: rgba(188, 236, 48, 1);
@@ -16,7 +17,6 @@
     --btn-primary-noActive: rgba(247, 247, 247, 1);
 
     --btn-secondary: transparent;
-    --btn-secondary-hover: rgba(247, 247, 247, 1);
     --btn-secondary-active: rgba(233, 236, 237, 1);
 
     /* Текст */

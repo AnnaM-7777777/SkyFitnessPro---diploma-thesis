@@ -30,6 +30,7 @@ type CourseProgressData = {
 type CourseWithProgress = Course & {
     progress: number;
     hasSelectedWorkouts?: boolean;
+    hasProgress?: boolean;
 };
 
 const COURSE_IMAGES: Record<string, string> = {
@@ -152,8 +153,12 @@ export default function MyCourses() {
                               )
                             : 0;
 
-                    // Добавляем флаг, есть ли выбранные тренировки
+                    // Проверяем: есть ли уже начатые тренировки
+                    const hasProgress = workoutsProgress.length > 0;
+
+                    // Добавляем флаги
                     course.hasSelectedWorkouts = hasSelectedWorkouts;
+                    course.hasProgress = hasProgress;
                     course.progress = progress;
 
                     coursesData.push(course);
@@ -215,7 +220,7 @@ export default function MyCourses() {
     const handleStartTraining = async (
         courseId: string,
         progress: number,
-        hasSelectedWorkouts: boolean,
+        hasProgress: boolean,
     ) => {
         // Блокируем повторные клики
         if (isNavigating) return;
@@ -239,7 +244,7 @@ export default function MyCourses() {
                     setIsNavigating(false);
                 }
             }
-        } else if (hasSelectedWorkouts) {
+        } else if (hasProgress) {
             setIsNavigating(true);
             await openNextIncompleteWorkout(courseId);
             setIsNavigating(false);
@@ -488,7 +493,7 @@ export default function MyCourses() {
                                         handleStartTraining(
                                             course._id,
                                             progress,
-                                            course.hasSelectedWorkouts || false,
+                                            course.hasProgress || false,
                                         )
                                     }
                                     disabled={isNavigating} // Блокируем во время перехода
@@ -497,7 +502,7 @@ export default function MyCourses() {
                                         ? "Загрузка..."
                                         : progress >= 100
                                           ? "Начать снова"
-                                          : course.hasSelectedWorkouts
+                                          : course.hasProgress
                                             ? "Продолжить"
                                             : "Начать тренировки"}
                                 </button>

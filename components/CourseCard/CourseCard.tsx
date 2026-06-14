@@ -55,6 +55,7 @@ export default function CourseCard({ course }: CourseCardProps) {
     // Правильно читаем вложенный объект user
     useEffect(() => {
         if (!token) {
+            setIsAdded(false);
             setLoading(false);
             return;
         }
