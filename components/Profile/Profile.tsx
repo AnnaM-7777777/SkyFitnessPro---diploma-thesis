@@ -1,50 +1,50 @@
-import { useRouter } from "next/router";
-import { useEffect } from "react";
-import { useAuth } from "@/context/AuthContext";
-import Image from "next/image";
-import styles from "./Profile.module.css";
+import { useRouter } from "next/router"
+import { useEffect } from "react"
+import { useAuth } from "@/context/AuthContext"
+import Image from "next/image"
+import styles from "./Profile.module.css"
 
 export default function Profile() {
-    const router = useRouter();
-    const { user, logout, isLoading } = useAuth();
+    const router = useRouter()
+    const { user, logout, isLoading } = useAuth()
 
     // Редирект через useEffect
     useEffect(() => {
         if (!isLoading && !user) {
-            router.push("/");
+            router.push("/")
         }
-    }, [user, isLoading, router]);
+    }, [user, isLoading, router])
 
     if (isLoading) {
         return (
             <div className={styles.profile}>
                 <div className={styles.profile__loading}>Загрузка...</div>
             </div>
-        );
+        )
     }
 
     if (!user) {
-        return null;
+        return null
     }
 
-    const userName = user.name || user.email?.split("@")[0] || "Пользователь";
-    const userLogin = user.email || "Не указан";
+    const userName = user.name || user.email?.split("@")[0] || "Пользователь"
+    const userLogin = user.email || "Не указан"
 
     const handleLogout = async () => {
         try {
-            await logout();
+            await logout()
         } catch (err) {
-            console.error("Ошибка при выходе:", err);
+            console.error("Ошибка при выходе:", err)
         }
-    };
+    }
 
     const getAvatarUrl = (imageUrl?: string): string => {
-        if (!imageUrl) return "/img/avatar.png";
+        if (!imageUrl) return "/img/avatar.png"
         if (imageUrl.includes("yandexcloud") || imageUrl.includes("skypro")) {
-            return "/img/avatar.png";
+            return "/img/avatar.png"
         }
-        return imageUrl;
-    };
+        return imageUrl
+    }
 
     return (
         <div className={styles.profile}>
@@ -72,5 +72,5 @@ export default function Profile() {
                 </button>
             </div>
         </div>
-    );
+    )
 }

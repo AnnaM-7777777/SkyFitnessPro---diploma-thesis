@@ -4,6 +4,6 @@ const nextConfig = {
     output: "standalone",
     generateEtags: false,
     skipTrailingSlashRedirect: true,
-};
+}
 
-module.exports = nextConfig;
+module.exports = nextConfig

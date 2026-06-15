@@ -1,20 +1,20 @@
-import Image from "next/image";
-import { useEffect } from "react";
-import styles from "./ModalUniversalNotifications.module.css";
+import Image from "next/image"
+import { useEffect } from "react"
+import styles from "./ModalUniversalNotifications.module.css"
 
-export type ModalType = "confirm" | "success" | "error" | "info";
+export type ModalType = "confirm" | "success" | "error" | "info"
 
 export interface ModalProps {
-    type?: ModalType;
-    title: string;
-    message?: string;
-    confirmText?: string;
-    cancelText?: string;
-    onConfirm?: () => void;
-    onCancel?: () => void;
-    onClose?: () => void;
-    autoClose?: number;
-    icon?: string;
+    type?: ModalType
+    title: string
+    message?: string
+    confirmText?: string
+    cancelText?: string
+    onConfirm?: () => void
+    onCancel?: () => void
+    onClose?: () => void
+    autoClose?: number
+    icon?: string
 }
 
 export default function Modal({
@@ -32,19 +32,19 @@ export default function Modal({
     useEffect(() => {
         if (autoClose && onClose) {
             const timer = setTimeout(() => {
-                onClose();
-            }, autoClose);
-            return () => clearTimeout(timer);
+                onClose()
+            }, autoClose)
+            return () => clearTimeout(timer)
         }
-    }, [autoClose, onClose]);
+    }, [autoClose, onClose])
 
     const handleOverlayClick = () => {
-        if (onClose) onClose();
-    };
+        if (onClose) onClose()
+    }
 
     const handleModalClick = (e: React.MouseEvent) => {
-        e.stopPropagation();
-    };
+        e.stopPropagation()
+    }
 
     // Иконки по умолчанию для разных типов
     const defaultIcons: Record<ModalType, string> = {
@@ -52,10 +52,10 @@ export default function Modal({
         error: "/img/error.svg",
         info: "/img/info.svg",
         confirm: "",
-    };
+    }
 
     // Используем кастомную иконку или дефолтную
-    const currentIcon = icon || defaultIcons[type];
+    const currentIcon = icon || defaultIcons[type]
 
     return (
         <div className={styles.overlay} onClick={handleOverlayClick}>
@@ -65,13 +65,7 @@ export default function Modal({
                     <div className={styles.successModal}>
                         <h2 className={styles.successModal__title}>{title}</h2>
 
-                        <Image
-                            src={currentIcon}
-                            alt="success"
-                            width={57}
-                            height={57}
-                            priority
-                        />
+                        <Image src={currentIcon} alt="success" width={57} height={57} priority />
                     </div>
                 )}
 
@@ -80,11 +74,7 @@ export default function Modal({
                     <div className={styles.confirmModal}>
                         <h2 className={styles.confirmModal__title}>{title}</h2>
 
-                        {message && (
-                            <p className={styles.confirmModal__message}>
-                                {message}
-                            </p>
-                        )}
+                        {message && <p className={styles.confirmModal__message}>{message}</p>}
 
                         <div className={styles.confirmModal__buttons}>
                             {onCancel && (
@@ -109,5 +99,5 @@ export default function Modal({
                 )}
             </div>
         </div>
-    );
+    )
 }

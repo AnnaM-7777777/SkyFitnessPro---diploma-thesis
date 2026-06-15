@@ -1,23 +1,23 @@
-import { useRouter } from "next/router";
-import { useEffect, useState, useMemo } from "react";
-import Layout from "@/components/Layout/Layout";
-import { useAuth } from "../../context/AuthContext";
-import { apiFetch } from "@/libs/apiConfig";
-import { MOCK_COURSES } from "@/libs/mockCourses";
-import type { Course } from "@/types/course";
-import styles from "./CoursePage.module.css";
-import Image from "next/image";
-import Link from "next/link";
-import Toast from "@/components/Toast/Toast";
+import { useRouter } from "next/router"
+import { useEffect, useState, useMemo } from "react"
+import Layout from "@/components/Layout/Layout"
+import { useAuth } from "../../context/AuthContext"
+import { apiFetch } from "@/libs/apiConfig"
+import { MOCK_COURSES } from "@/libs/mockCourses"
+import type { Course } from "@/types/course"
+import styles from "./CoursePage.module.css"
+import Image from "next/image"
+import Link from "next/link"
+import Toast from "@/components/Toast/Toast"
 
 type UserData = {
-    email: string;
-    selectedCourses: string[];
-};
+    email: string
+    selectedCourses: string[]
+}
 
 // Определяем тему по названию курса
 const getCourseThemeByTitle = (title: string) => {
-    const lowerTitle = title.toLowerCase();
+    const lowerTitle = title.toLowerCase()
 
     if (lowerTitle.includes("йог")) {
         return {
@@ -25,7 +25,7 @@ const getCourseThemeByTitle = (title: string) => {
             color: "rgba(255, 199, 0, 1)",
             backgroundSize: "auto 100%",
             backgroundPosition: "right",
-        };
+        }
     }
     if (lowerTitle.includes("стретч") || lowerTitle.includes("растяж")) {
         return {
@@ -33,7 +33,7 @@ const getCourseThemeByTitle = (title: string) => {
             color: "rgba(36, 145, 210, 1)",
             backgroundSize: "auto 100%",
             backgroundPosition: "right",
-        };
+        }
     }
     if (lowerTitle.includes("фитнес") || lowerTitle.includes("fitness")) {
         return {
@@ -41,7 +41,7 @@ const getCourseThemeByTitle = (title: string) => {
             color: "rgba(247, 160, 18, 1)",
             backgroundSize: "auto 100%",
             backgroundPosition: "right",
-        };
+        }
     }
     if (lowerTitle.includes("аэроб") || lowerTitle.includes("aerob")) {
         return {
@@ -49,7 +49,7 @@ const getCourseThemeByTitle = (title: string) => {
             color: "rgba(255, 126, 101, 1)",
             backgroundSize: "auto 100%",
             backgroundPosition: "right",
-        };
+        }
     }
     if (lowerTitle.includes("бодифлекс") || lowerTitle.includes("bodyflex")) {
         return {
@@ -57,7 +57,7 @@ const getCourseThemeByTitle = (title: string) => {
             color: "rgba(125, 69, 140, 1)",
             backgroundSize: "auto 100%",
             backgroundPosition: "right",
-        };
+        }
     }
 
     return {
@@ -65,107 +65,99 @@ const getCourseThemeByTitle = (title: string) => {
         color: "rgba(255, 199, 0, 1)",
         backgroundSize: "auto 100%",
         backgroundPosition: "right",
-    };
-};
+    }
+}
 
 export default function CoursePage() {
-    const router = useRouter();
-    const { id } = router.query;
-    const { user, token } = useAuth();
-    const [course, setCourse] = useState<Course | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [isAdded, setIsAdded] = useState(false);
+    const router = useRouter()
+    const { id } = router.query
+    const { user, token } = useAuth()
+    const [course, setCourse] = useState<Course | null>(null)
+    const [loading, setLoading] = useState(true)
+    const [isAdded, setIsAdded] = useState(false)
     const [toast, setToast] = useState<{
-        message: string;
-        type: "error" | "success";
-    } | null>(null);
+        message: string
+        type: "error" | "success"
+    } | null>(null)
 
     // Вычисляем courseId один раз через useMemo
     const courseId = useMemo(() => {
-        if (!id) return "";
-        return Array.isArray(id) ? id[0] : id;
-    }, [id]);
+        if (!id) return ""
+        return Array.isArray(id) ? id[0] : id
+    }, [id])
 
     // 1. Загрузка данных курса
     useEffect(() => {
-        if (!courseId) return;
+        if (!courseId) return
 
         const fetchCourse = async () => {
             try {
-                const data = await apiFetch(`/courses/${courseId}`);
-                setCourse(data as Course);
+                const data = await apiFetch(`/courses/${courseId}`)
+                setCourse(data as Course)
             } catch {
-                const mock = MOCK_COURSES.find(
-                    (c) => c._id === courseId || c.id === courseId,
-                );
-                if (mock) setCourse(mock as Course);
+                const mock = MOCK_COURSES.find((c) => c._id === courseId || c.id === courseId)
+                if (mock) setCourse(mock as Course)
             } finally {
-                setLoading(false);
+                setLoading(false)
             }
-        };
+        }
 
-        fetchCourse();
-    }, [courseId]);
+        fetchCourse()
+    }, [courseId])
 
     // 2. ПРОВЕРКА: Добавлен ли курс при загрузке страницы
     useEffect(() => {
-        if (!token || !courseId) return;
+        if (!token || !courseId) return
 
         const checkIfAdded = async () => {
             try {
-                const response = await apiFetch<{ user: UserData }>(
-                    "/users/me",
-                );
-                const userData = response.user;
-                const isCourseAdded =
-                    userData.selectedCourses?.includes(courseId);
-                setIsAdded(isCourseAdded || false);
+                const response = await apiFetch<{ user: UserData }>("/users/me")
+                const userData = response.user
+                const isCourseAdded = userData.selectedCourses?.includes(courseId)
+                setIsAdded(isCourseAdded || false)
             } catch (err) {
-                console.error("Ошибка проверки курса:", err);
+                console.error("Ошибка проверки курса:", err)
             }
-        };
+        }
 
-        checkIfAdded();
-    }, [token, courseId]);
+        checkIfAdded()
+    }, [token, courseId])
 
     // 3. Добавление курса
     const handleAddCourse = async () => {
         if (!user) {
-            router.push(`/?modal=login`, undefined, { shallow: true });
-            return;
+            router.push(`/?modal=login`, undefined, { shallow: true })
+            return
         }
 
         try {
             await apiFetch("/users/me/courses", {
                 method: "POST",
                 body: JSON.stringify({ courseId }),
-            });
+            })
 
-            setIsAdded(true);
+            setIsAdded(true)
 
             setToast({
                 message: "Курс успешно добавлен!",
                 type: "success",
-            });
-            setTimeout(() => setToast(null), 3000);
+            })
+            setTimeout(() => setToast(null), 3000)
         } catch (err: unknown) {
-            if (
-                err instanceof Error &&
-                err.message.includes("уже был добавлен")
-            ) {
-                setIsAdded(true);
-                return;
+            if (err instanceof Error && err.message.includes("уже был добавлен")) {
+                setIsAdded(true)
+                return
             }
 
-            console.error("Ошибка добавления курса:", err);
+            console.error("Ошибка добавления курса:", err)
 
             setToast({
                 message: "Не удалось добавить курс",
                 type: "error",
-            });
-            setTimeout(() => setToast(null), 3000);
+            })
+            setTimeout(() => setToast(null), 3000)
         }
-    };
+    }
 
     if (loading) {
         return (
@@ -174,7 +166,7 @@ export default function CoursePage() {
                     <p>Загрузка курса...</p>
                 </div>
             </Layout>
-        );
+        )
     }
 
     if (!course) {
@@ -188,26 +180,23 @@ export default function CoursePage() {
                     </Link>
                 </div>
             </Layout>
-        );
+        )
     }
 
-    const title = course.nameRU || course.title || course.name || "Курс";
+    const title = course.nameRU || course.title || course.name || "Курс"
 
     const {
         image: courseImage,
         color: courseColor,
         backgroundSize,
         backgroundPosition,
-    } = getCourseThemeByTitle(title);
+    } = getCourseThemeByTitle(title)
 
     return (
         <Layout showTitle={true} showScrollToTop={true}>
             <div className={styles.page}>
                 {/* Шапка курса */}
-                <section
-                    className={styles.header}
-                    style={{ backgroundColor: courseColor }}
-                >
+                <section className={styles.header} style={{ backgroundColor: courseColor }}>
                     <div className={styles.header__content}>
                         <h1 className={styles.header__title}>{title}</h1>
                     </div>
@@ -217,8 +206,7 @@ export default function CoursePage() {
                         style={{
                             backgroundImage: `url(${courseImage})`,
                             backgroundSize: backgroundSize || "cover",
-                            backgroundPosition:
-                                backgroundPosition || "center top",
+                            backgroundPosition: backgroundPosition || "center top",
                             backgroundRepeat: "no-repeat",
                         }}
                     />
@@ -227,9 +215,7 @@ export default function CoursePage() {
                 {/* Описание курса */}
                 <section className={styles.description}>
                     <p className={styles.description__text}>
-                        <span className={styles.description__title}>
-                            {title} –{" "}
-                        </span>
+                        <span className={styles.description__title}>{title} – </span>
                         {course.description || "Описание курса будет здесь"}
                     </p>
                 </section>
@@ -270,12 +256,8 @@ export default function CoursePage() {
                         <div className={styles.directions__block}>
                             {course.directions.map((dir, i) => (
                                 <div key={i} className={styles.direction}>
-                                    <span className={styles.direction__span}>
-                                        ⯌
-                                    </span>
-                                    <p className={styles.direction__text}>
-                                        {dir}
-                                    </p>
+                                    <span className={styles.direction__span}>⯌</span>
+                                    <p className={styles.direction__text}>{dir}</p>
                                 </div>
                             ))}
                         </div>
@@ -285,9 +267,7 @@ export default function CoursePage() {
                 {/* CTA-блок с бегуном */}
                 <section className={styles.cta}>
                     <div className={styles.cta__content}>
-                        <h2 className={styles.cta__title}>
-                            Начните путь к новому телу
-                        </h2>
+                        <h2 className={styles.cta__title}>Начните путь к новому телу</h2>
 
                         {/* Исправлена проверка benefits */}
                         <ul className={styles.benefits}>
@@ -313,10 +293,7 @@ export default function CoursePage() {
                                 Войдите, чтобы добавить курс
                             </button>
                         ) : isAdded ? (
-                            <button
-                                disabled
-                                className={`${styles.cta__btn} btn-primary`}
-                            >
+                            <button disabled className={`${styles.cta__btn} btn-primary`}>
                                 Курс уже добавлен ✓
                             </button>
                         ) : (
@@ -368,5 +345,5 @@ export default function CoursePage() {
                 )}
             </div>
         </Layout>
-    );
+    )
 }

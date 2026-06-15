@@ -100,7 +100,7 @@
     font-size: 14px;
     line-height: 110%;
     color: rgba(32, 32, 32, 1);
-    transform: translateY(25px) translateX(-10px); 
+    transform: translateY(25px) translateX(-10px);
 }
 
 /* Скрываем стандартный курсор при наведении на кнопку */

@@ -3,7 +3,7 @@
     position: fixed;
     bottom: 40px;
     left: 50%;
-    transform: translateX(-50%); 
+    transform: translateX(-50%);
     z-index: 100;
     animation: fadeIn 0.3s ease forwards;
 }

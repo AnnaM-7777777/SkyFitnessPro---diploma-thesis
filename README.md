@@ -179,11 +179,11 @@ headers: { "Content-Type": "application/json" }
 
 ```typescript
 try {
-    setUser(JSON.parse(fitnessUser));
+    setUser(JSON.parse(fitnessUser))
 } catch (err) {
-    console.error("Ошибка парсинга user из localStorage:", err);
-    localStorage.removeItem("fitness_token");
-    localStorage.removeItem("fitness_user");
+    console.error("Ошибка парсинга user из localStorage:", err)
+    localStorage.removeItem("fitness_token")
+    localStorage.removeItem("fitness_user")
 }
 ```
 
@@ -337,9 +337,9 @@ try {
 **2. Проверка JWT-токена в консоли браузера:**
 
 ```typescript
-const token = localStorage.getItem("fitness_token");
-console.log("Токен:", token);
-console.log("Начинается с eyJ?", token?.startsWith("eyJ"));
+const token = localStorage.getItem("fitness_token")
+console.log("Токен:", token)
+console.log("Начинается с eyJ?", token?.startsWith("eyJ"))
 ```
 
 **3. Добавление курса — кнопка "+" должна смениться на "-"**

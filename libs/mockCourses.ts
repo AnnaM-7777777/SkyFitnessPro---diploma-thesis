@@ -1,4 +1,4 @@
-import type { Course } from "@/types/course";
+import type { Course } from "@/types/course"
 
 export const MOCK_COURSES: Course[] = [
     {
@@ -61,4 +61,4 @@ export const MOCK_COURSES: Course[] = [
         workouts: ["w11", "w12"],
         imageBG: "/img/5-bodyflex-l.png",
     },
-];
+]

@@ -1,6 +1,6 @@
-import styles from "./Logo.module.css";
-import Link from "next/link";
-import Image from "next/image";
+import styles from "./Logo.module.css"
+import Link from "next/link"
+import Image from "next/image"
 
 export default function Logo() {
     return (
@@ -16,5 +16,5 @@ export default function Logo() {
 
             <span className={styles.linkLogo__title}>SkyFitnessPro</span>
         </Link>
-    );
+    )
 }

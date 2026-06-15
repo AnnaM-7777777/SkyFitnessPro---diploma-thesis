@@ -3,7 +3,11 @@
     --bg-primary: rgba(250, 250, 250, 1); /* Основной фон страницы */
     --bg-secondary: rgba(255, 255, 255, 1); /* Фон карточек */
     --bg-line: rgba(247, 247, 247, 1); /* Фон линии */
-    --bg-line-progress: linear-gradient(90deg, rgba(0, 193, 255, 1) 0%, rgb(73, 209, 255) 100%); /* Цвет линии */
+    --bg-line-progress: linear-gradient(
+        90deg,
+        rgba(0, 193, 255, 1) 0%,
+        rgb(73, 209, 255) 100%
+    ); /* Цвет линии */
     --bg-dark-gradient-1: rgba(21, 23, 32, 1);
     --bg-dark-gradient-2: rgba(30, 33, 46, 1);
     --bg-block: rgba(188, 236, 48, 1); /* Фон небольших блоков на странице */
@@ -29,13 +33,8 @@
     --border-btn-secondary: 1px solid rgba(0, 0, 0, 1); /* border кнопки */
     --border-btn-secondary-noActive: 1px solid rgba(153, 153, 153, 1); /* border кнопки */
     --border-input: 1px solid rgba(208, 206, 206, 1); /* border input */
-    --border-bottom-list: 1px solid rgba(
-        196,
-        196,
-        196,
-        1
-    ); /* border нижний в списке тренировок */
-    
+    --border-bottom-list: 1px solid rgba(196, 196, 196, 1); /* border нижний в списке тренировок */
+
     /* --border-line: rgba(247, 247, 247, 1); */ /* border фильтра при active */
 
     /* Тени */
@@ -49,8 +48,7 @@
 }
 
 body {
-    font-family:
-        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background-color: var(--bg-primary);
 }
 
@@ -64,8 +62,7 @@ a {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family:
-        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-weight: 400;
     font-size: 18px;
     border-radius: 46px;
@@ -126,8 +123,7 @@ a {
 }
 
 .input-login {
-    font-family:
-        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-weight: 400;
     font-size: 18px;
     border: var(--border-input);
@@ -136,8 +132,7 @@ a {
 }
 
 .input-login::placeholder {
-    font-family:
-        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-weight: 400;
     font-size: 18px;
     color: var(--text-placeholder);

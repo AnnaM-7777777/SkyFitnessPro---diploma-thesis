@@ -1,21 +1,21 @@
-import { useEffect } from "react";
-import { useRouter } from "next/router";
-import { useAuth } from "@/context/AuthContext";
-import Profile from "@/components/Profile/Profile";
-import Layout from "@/components/Layout/Layout";
-import MyCourses from "@/components/MyCourses/MyCourses";
-import styles from "./ProfilePage.module.css";
+import { useEffect } from "react"
+import { useRouter } from "next/router"
+import { useAuth } from "@/context/AuthContext"
+import Profile from "@/components/Profile/Profile"
+import Layout from "@/components/Layout/Layout"
+import MyCourses from "@/components/MyCourses/MyCourses"
+import styles from "./ProfilePage.module.css"
 
 export default function ProfilePage() {
-    const router = useRouter();
-    const { token, isLoading } = useAuth();
+    const router = useRouter()
+    const { token, isLoading } = useAuth()
 
     // replace вместо push
     useEffect(() => {
         if (!isLoading && !token) {
-            router.replace("/?modal=login");
+            router.replace("/?modal=login")
         }
-    }, [isLoading, token, router]);
+    }, [isLoading, token, router])
 
     // Разделяем состояния для лучшего UX
     if (isLoading) {
@@ -25,7 +25,7 @@ export default function ProfilePage() {
                     <div className={styles.loading}>Загрузка...</div>
                 </div>
             </Layout>
-        );
+        )
     }
 
     if (!token) {
@@ -35,7 +35,7 @@ export default function ProfilePage() {
                     <div className={styles.loading}>Перенаправление...</div>
                 </div>
             </Layout>
-        );
+        )
     }
 
     return (
@@ -50,5 +50,5 @@ export default function ProfilePage() {
                 </main>
             </div>
         </Layout>
-    );
+    )
 }

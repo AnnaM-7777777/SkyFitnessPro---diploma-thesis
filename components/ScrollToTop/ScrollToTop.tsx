@@ -1,24 +1,24 @@
-import { useState, useEffect } from "react";
-import styles from "./ScrollToTop.module.css";
+import { useState, useEffect } from "react"
+import styles from "./ScrollToTop.module.css"
 
 export default function ScrollToTop() {
-    const [showButton, setShowButton] = useState(false);
+    const [showButton, setShowButton] = useState(false)
 
     useEffect(() => {
         const handleScroll = () => {
-            setShowButton(window.scrollY > 300);
-        };
+            setShowButton(window.scrollY > 300)
+        }
 
-        handleScroll();
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
+        handleScroll()
+        window.addEventListener("scroll", handleScroll)
+        return () => window.removeEventListener("scroll", handleScroll)
+    }, [])
 
     const scrollToTop = () => {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-    };
+        window.scrollTo({ top: 0, behavior: "smooth" })
+    }
 
-    if (!showButton) return null;
+    if (!showButton) return null
 
     return (
         <button
@@ -28,5 +28,5 @@ export default function ScrollToTop() {
         >
             Наверх ↑
         </button>
-    );
+    )
 }

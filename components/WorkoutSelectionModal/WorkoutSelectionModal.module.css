@@ -73,7 +73,7 @@
     /* background-color: var(--text-primary) !important;    
     min-height: 116px !important; */
 
-     /* Создаем градиент: прозрачный (0px) -> черный -> прозрачный (0px) */
+    /* Создаем градиент: прозрачный (0px) -> черный -> прозрачный (0px) */
     background: linear-gradient(
         to bottom,
         transparent 0,
@@ -81,7 +81,7 @@
         var(--text-primary) calc(100% - 116px),
         transparent 0
     ) !important;
-    
+
     /* Задаем минимальную общую высоту, чтобы градиент не сломался */
     min-height: 50px !important;
     border-radius: 10px !important;
