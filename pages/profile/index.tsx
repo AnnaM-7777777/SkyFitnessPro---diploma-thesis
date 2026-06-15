@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext";
 import Profile from "@/components/Profile/Profile";
-import Header from "@/components/Header/Header";
+import Layout from "@/components/Layout/Layout";
 import MyCourses from "@/components/MyCourses/MyCourses";
 import styles from "./ProfilePage.module.css";
 
@@ -20,33 +20,35 @@ export default function ProfilePage() {
     // Разделяем состояния для лучшего UX
     if (isLoading) {
         return (
-            <div className={styles.profilePage}>
-                <Header showTitle={false} />
-                <div className={styles.loading}>Загрузка...</div>
-            </div>
+            <Layout showTitle={false}>
+                <div className={styles.profilePage}>
+                    <div className={styles.loading}>Загрузка...</div>
+                </div>
+            </Layout>
         );
     }
 
     if (!token) {
         return (
-            <div className={styles.profilePage}>
-                <Header showTitle={false} />
-                <div className={styles.loading}>Перенаправление...</div>
-            </div>
+            <Layout showTitle={false}>
+                <div className={styles.profilePage}>
+                    <div className={styles.loading}>Перенаправление...</div>
+                </div>
+            </Layout>
         );
     }
 
     return (
-        <div className={styles.profilePage}>
-            <Header showTitle={false} />
+        <Layout showTitle={false}>
+            <div className={styles.profilePage}>
+                <main className={styles.profilePage__content}>
+                    <h2 className={styles.profilePage__title}>Профиль</h2>
+                    <Profile />
 
-            <main className={styles.profilePage__content}>
-                <h2 className={styles.profilePage__title}>Профиль</h2>
-                <Profile />
-
-                <h2 className={styles.profilePage__title}>Мои курсы</h2>
-                <MyCourses />
-            </main>
-        </div>
+                    <h2 className={styles.profilePage__title}>Мои курсы</h2>
+                    <MyCourses />
+                </main>
+            </div>
+        </Layout>
     );
 }

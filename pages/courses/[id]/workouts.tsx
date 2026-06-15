@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import { useEffect, useState, useRef, useMemo } from "react";
-import Header from "@/components/Header/Header";
+import Layout from "@/components/Layout/Layout";
 import { apiFetch } from "@/libs/apiConfig";
 import { useAuth } from "@/context/AuthContext";
 import ProgressModal from "@/components/ProgressModal/ProgressModal";
@@ -355,10 +355,13 @@ export default function WorkoutsPage() {
     // Показываем loading при проверке авторизации
     if (isLoading) {
         return (
-            <div className={styles.container}>
-                <Header showTitle={false} />
-                <div className={styles.loading}>Проверка авторизации...</div>
-            </div>
+            <Layout showTitle={false}>
+                <div className={styles.container}>
+                    <div className={styles.loading}>
+                        Проверка авторизации...
+                    </div>
+                </div>
+            </Layout>
         );
     }
 
@@ -369,169 +372,188 @@ export default function WorkoutsPage() {
 
     if (loading) {
         return (
-            <div className={styles.container}>
-                <Header showTitle={false} />
-                <div className={styles.loading}>Загрузка тренировок...</div>
-            </div>
+            <Layout showTitle={false}>
+                <div className={styles.container}>
+                    <div className={styles.loading}>Загрузка тренировок...</div>
+                </div>
+            </Layout>
         );
     }
 
     if (workouts.length === 0) {
         return (
-            <div className={styles.container}>
-                <Header showTitle={false} />
-                <div className={styles.empty}>Тренировки не найдены</div>
-            </div>
+            <Layout showTitle={false}>
+                <div className={styles.container}>
+                    <div className={styles.empty}>Тренировки не найдены</div>
+                </div>
+            </Layout>
         );
     }
 
     return (
-        <div className={styles.container}>
-            <Header showTitle={false} />
-            <h2 className={styles.title}>{courseName}</h2>
+        <Layout showTitle={false}>
+            <div className={styles.container}>
+                <h2 className={styles.title}>{courseName}</h2>
 
-            {workouts.map((workout) => {
-                const videoId = getYouTubeId(workout.video);
-                const isSelected = selected === workout._id;
-                const hasProgress =
-                    workout.exerciseProgress?.some((ep) => ep.progress > 0) ??
-                    false;
+                {workouts.map((workout) => {
+                    const videoId = getYouTubeId(workout.video);
+                    const isSelected = selected === workout._id;
+                    const hasProgress =
+                        workout.exerciseProgress?.some(
+                            (ep) => ep.progress > 0,
+                        ) ?? false;
 
-                return (
-                    <div
-                        key={workout._id}
-                        ref={isSelected ? selectedRef : null}
-                        className={styles.workoutBlock}
-                    >
-                        <div className={styles.videoWrapper}>
-                            {videoId ? (
-                                <iframe
-                                    src={videoId}
-                                    title={workout.name}
-                                    frameBorder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                    className={styles.video}
-                                    onError={() => {
-                                        console.error(
-                                            `❌ Видео "${workout.name}" не загрузилось`,
-                                        );
-                                    }}
-                                />
-                            ) : (
-                                <div className={styles.videoPlaceholder}>
-                                    Видео недоступно
-                                </div>
-                            )}
-                        </div>
-
-                        <div className={styles.exercisesBlock}>
-                            <h3 className={styles.exercisesTitle}>
-                                {workout.name}
-                            </h3>
-
-                            <div className={styles.exercisesList}>
-                                {workout.exercises?.map((exercise, index) => {
-                                    const progress = workout.exerciseProgress
-                                        ? workout.exerciseProgress[index]
-                                              ?.progress || 0
-                                        : 0;
-
-                                    return (
-                                        <div
-                                            key={exercise._id}
-                                            className={styles.exerciseItem}
-                                        >
-                                            <span
-                                                className={styles.exerciseName}
-                                            >
-                                                {exercise.name} {progress}%
-                                            </span>
-
-                                            <div
-                                                className={
-                                                    styles.progressContainer
-                                                }
-                                            >
-                                                <div
-                                                    className={
-                                                        styles.progressBar
-                                                    }
-                                                    style={{
-                                                        width: `${progress}%`,
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-
-                            <div className={styles.progressButtonsBlock}>
-                                <button
-                                    className={`${styles.progressButton} btn-primary`}
-                                    onClick={() => handleProgressClick(workout)}
-                                >
-                                    {hasProgress
-                                        ? "Обновить свой прогресс"
-                                        : "Заполнить свой прогресс"}
-                                </button>
-
-                                {hasProgress && (
-                                    <button
-                                        className={`${styles.resetButton} btn-secondary`}
-                                        onClick={() =>
-                                            handleResetWorkoutProgress(
-                                                workout._id,
-                                                workout.exercises.length,
-                                            )
-                                        }
-                                    >
-                                        Сбросить свой прогресс
-                                    </button>
+                    return (
+                        <div
+                            key={workout._id}
+                            ref={isSelected ? selectedRef : null}
+                            className={styles.workoutBlock}
+                        >
+                            <div className={styles.videoWrapper}>
+                                {videoId ? (
+                                    <iframe
+                                        src={videoId}
+                                        title={workout.name}
+                                        frameBorder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                        className={styles.video}
+                                        onError={() => {
+                                            console.error(
+                                                `❌ Видео "${workout.name}" не загрузилось`,
+                                            );
+                                        }}
+                                    />
+                                ) : (
+                                    <div className={styles.videoPlaceholder}>
+                                        Видео недоступно
+                                    </div>
                                 )}
                             </div>
+
+                            <div className={styles.exercisesBlock}>
+                                <h3 className={styles.exercisesTitle}>
+                                    {workout.name}
+                                </h3>
+
+                                <div className={styles.exercisesList}>
+                                    {workout.exercises?.map(
+                                        (exercise, index) => {
+                                            const progress =
+                                                workout.exerciseProgress
+                                                    ? workout.exerciseProgress[
+                                                          index
+                                                      ]?.progress || 0
+                                                    : 0;
+
+                                            return (
+                                                <div
+                                                    key={exercise._id}
+                                                    className={
+                                                        styles.exerciseItem
+                                                    }
+                                                >
+                                                    <span
+                                                        className={
+                                                            styles.exerciseName
+                                                        }
+                                                    >
+                                                        {exercise.name}{" "}
+                                                        {progress}%
+                                                    </span>
+
+                                                    <div
+                                                        className={
+                                                            styles.progressContainer
+                                                        }
+                                                    >
+                                                        <div
+                                                            className={
+                                                                styles.progressBar
+                                                            }
+                                                            style={{
+                                                                width: `${progress}%`,
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            );
+                                        },
+                                    )}
+                                </div>
+
+                                <div className={styles.progressButtonsBlock}>
+                                    <button
+                                        className={`${styles.progressButton} btn-primary`}
+                                        onClick={() =>
+                                            handleProgressClick(workout)
+                                        }
+                                    >
+                                        {hasProgress
+                                            ? "Обновить свой прогресс"
+                                            : "Заполнить свой прогресс"}
+                                    </button>
+
+                                    {hasProgress && (
+                                        <button
+                                            className={`${styles.resetButton} btn-secondary`}
+                                            onClick={() =>
+                                                handleResetWorkoutProgress(
+                                                    workout._id,
+                                                    workout.exercises.length,
+                                                )
+                                            }
+                                        >
+                                            Сбросить свой прогресс
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            <hr className={styles.exercisesLine} />
                         </div>
+                    );
+                })}
 
-                        <hr className={styles.exercisesLine} />
-                    </div>
-                );
-            })}
+                {activeWorkout && courseId && (
+                    <ProgressModal
+                        courseId={courseId}
+                        workoutId={activeWorkout._id}
+                        exercises={activeWorkout.exercises}
+                        initialProgress={
+                            activeWorkout.exerciseProgress
+                                ? activeWorkout.exercises.map(
+                                      (exercise, index) => {
+                                          const progress =
+                                              activeWorkout.exerciseProgress?.[
+                                                  index
+                                              ]?.progress || 0;
+                                          return Math.round(
+                                              (progress / 100) *
+                                                  exercise.quantity,
+                                          );
+                                      },
+                                  )
+                                : undefined
+                        }
+                        onClose={() => setActiveWorkout(null)}
+                        onSuccess={handleProgressSaved}
+                    />
+                )}
 
-            {activeWorkout && courseId && (
-                <ProgressModal
-                    courseId={courseId}
-                    workoutId={activeWorkout._id}
-                    exercises={activeWorkout.exercises}
-                    initialProgress={
-                        activeWorkout.exerciseProgress
-                            ? activeWorkout.exercises.map((exercise, index) => {
-                                  const progress =
-                                      activeWorkout.exerciseProgress?.[index]
-                                          ?.progress || 0;
-                                  return Math.round(
-                                      (progress / 100) * exercise.quantity,
-                                  );
-                              })
-                            : undefined
-                    }
-                    onClose={() => setActiveWorkout(null)}
-                    onSuccess={handleProgressSaved}
-                />
-            )}
-
-            {modal && (
-                <Modal
-                    type={modal.type}
-                    title={modal.title}
-                    message={modal.message}
-                    onConfirm={modal.onConfirm}
-                    onCancel={() => setModal(null)}
-                    onClose={() => setModal(null)}
-                    autoClose={modal.autoClose}
-                    icon={modal.icon}
-                />
-            )}
-        </div>
+                {modal && (
+                    <Modal
+                        type={modal.type}
+                        title={modal.title}
+                        message={modal.message}
+                        onConfirm={modal.onConfirm}
+                        onCancel={() => setModal(null)}
+                        onClose={() => setModal(null)}
+                        autoClose={modal.autoClose}
+                        icon={modal.icon}
+                    />
+                )}
+            </div>
+        </Layout>
     );
 }

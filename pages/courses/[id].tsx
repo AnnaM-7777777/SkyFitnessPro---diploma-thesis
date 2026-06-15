@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import { useEffect, useState, useMemo } from "react";
-import Header from "../../components/Header/Header";
+import Layout from "@/components/Layout/Layout";
 import { useAuth } from "../../context/AuthContext";
 import { apiFetch } from "@/libs/apiConfig";
 import { MOCK_COURSES } from "@/libs/mockCourses";
@@ -169,22 +169,24 @@ export default function CoursePage() {
 
     if (loading) {
         return (
-            <div className={styles.loading}>
-                <Header />
-                <p>Загрузка курса...</p>
-            </div>
+            <Layout showTitle={true}>
+                <div className={styles.loading}>
+                    <p>Загрузка курса...</p>
+                </div>
+            </Layout>
         );
     }
 
     if (!course) {
         return (
-            <div className={styles.notFound}>
-                <Header />
-                <p>Курс не найден 😔</p>
-                <Link href="/" className="btn-primary">
-                    ← На главную
-                </Link>
-            </div>
+            <Layout showTitle={true}>
+                <div className={styles.notFound}>
+                    <p>Курс не найден 😔</p>
+                    <Link href="/" className="btn-primary">
+                        ← На главную
+                    </Link>
+                </div>
+            </Layout>
         );
     }
 
@@ -198,9 +200,7 @@ export default function CoursePage() {
     } = getCourseThemeByTitle(title);
 
     return (
-        <>
-            <Header />
-            
+        <Layout showTitle={true}>
             <div className={styles.page}>
                 {/* Шапка курса */}
                 <section
@@ -366,6 +366,6 @@ export default function CoursePage() {
                     />
                 )}
             </div>
-        </>
+        </Layout>
     );
 }

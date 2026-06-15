@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import Header from "../components/Header/Header";
+import Layout from '@/components/Layout/Layout';
 import CourseCard from "../components/CourseCard/CourseCard";
 import type { Course } from "@/types/course";
 import styles from "./indexStyle.module.css";
@@ -78,9 +78,8 @@ export default function HomePage() {
     const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
     return (
-        <div className={styles.homePage}>
-            <Header />
-            <main className={styles.homePage__container}>
+        <Layout showTitle={true}>
+            <main className={styles.homePage}>
                 <section className={styles.container__text}>
                     <h1 className={styles.text__title}>
                         Начните заниматься спортом и улучшите качество жизни
@@ -151,6 +150,6 @@ export default function HomePage() {
                     onClose={() => setToast(null)}
                 />
             )}
-        </div>
+        </Layout>
     );
 }
