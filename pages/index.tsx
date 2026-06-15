@@ -19,7 +19,6 @@ export default function HomePage() {
     const [activeModal, setActiveModal] = useState<"login" | "register" | null>(
         null,
     );
-    const [showScrollButton, setShowScrollButton] = useState(false);
     const [toast, setToast] = useState<{
         message: string;
         type: "error" | "success";
@@ -61,24 +60,8 @@ export default function HomePage() {
         fetchCourses();
     }, []);
 
-    // Отслеживаем позицию скролла
-    useEffect(() => {
-        const handleScroll = () => {
-            // Показываем кнопку после 300px прокрутки
-            setShowScrollButton(window.scrollY > 300);
-        };
-
-        // Проверяем начальную позицию
-        handleScroll();
-
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
-
-    const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
-
     return (
-        <Layout showTitle={true}>
+        <Layout showTitle={true} showScrollToTop={true}>
             <main className={styles.homePage}>
                 <section className={styles.container__text}>
                     <h1 className={styles.text__title}>
@@ -116,18 +99,6 @@ export default function HomePage() {
                         <p className={styles.emptyText}>Курсов пока нет 😔</p>
                     )}
                 </section>
-
-                {/* Кнопка показывается только при скролле */}
-                {showScrollButton && (
-                    <section className={styles.container__btn}>
-                        <button
-                            className={`${styles.container__btnUp} btn-primary`}
-                            onClick={scrollToTop}
-                        >
-                            Наверх ↑
-                        </button>
-                    </section>
-                )}
             </main>
 
             {/* Рендерим модальные окна ПОВЕРХ главной страницы */}

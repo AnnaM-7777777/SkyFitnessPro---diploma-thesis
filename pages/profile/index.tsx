@@ -39,7 +39,7 @@ export default function ProfilePage() {
     }
 
     return (
-        <Layout showTitle={false}>
+        <Layout showTitle={false} showScrollToTop={true}>
             <div className={styles.profilePage}>
                 <main className={styles.profilePage__content}>
                     <h2 className={styles.profilePage__title}>Профиль</h2>

@@ -169,7 +169,7 @@ export default function CoursePage() {
 
     if (loading) {
         return (
-            <Layout showTitle={true}>
+            <Layout showTitle={true} showScrollToTop={true}>
                 <div className={styles.loading}>
                     <p>Загрузка курса...</p>
                 </div>
@@ -179,10 +179,11 @@ export default function CoursePage() {
 
     if (!course) {
         return (
-            <Layout showTitle={true}>
+            <Layout showTitle={true} showScrollToTop={true}>
                 <div className={styles.notFound}>
-                    <p>Курс не найден 😔</p>
-                    <Link href="/" className="btn-primary">
+                    <p className={styles.notFound__text}>Курс не найден 😔</p>
+
+                    <Link href="/" className={`${styles.notFound__btn} btn-primary`}>
                         ← На главную
                     </Link>
                 </div>
@@ -200,7 +201,7 @@ export default function CoursePage() {
     } = getCourseThemeByTitle(title);
 
     return (
-        <Layout showTitle={true}>
+        <Layout showTitle={true} showScrollToTop={true}>
             <div className={styles.page}>
                 {/* Шапка курса */}
                 <section

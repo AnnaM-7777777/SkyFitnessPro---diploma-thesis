@@ -1,10 +1,11 @@
 .page {
     min-height: 100vh;
     background-color: var(--bg-primary);
-    padding: 0 calc(50% - 600px) 50px;
+    padding: 0 calc(50% - 600px) 128px;
 }
 
-.title {
+.title,
+.notFound__text {
     font-weight: 600;
     font-size: 40px;
     line-height: 110%;
@@ -20,6 +21,11 @@
     min-height: 100vh;
     padding: 20px;
     text-align: center;
+}
+
+.notFound__btn {
+    width: 150px;
+    margin-top: 40px;
 }
 
 /* Шапка курса — с динамическим фоном и картинкой */

@@ -391,7 +391,7 @@ export default function WorkoutsPage() {
     }
 
     return (
-        <Layout showTitle={false}>
+        <Layout showTitle={false} showScrollToTop={true}>
             <div className={styles.container}>
                 <h2 className={styles.title}>{courseName}</h2>
 
