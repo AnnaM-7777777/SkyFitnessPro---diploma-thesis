@@ -1,12 +1,7 @@
 .homePage {
     width: 100%;
-    padding: 0 calc(50% - 600px);
     background-color: var(--bg-primary);
-}
-
-.homePage__container {
-    width: 100%;
-    padding: 10px 0 81px;
+    padding: 0 calc(50% - 600px) 128px;
 }
 
 .container__text {
@@ -19,7 +14,6 @@
     font-weight: 500;
     font-size: 60px;
     line-height: 100%;
-    letter-spacing: 0px;
     width: 840px;
 }
 
@@ -37,8 +31,6 @@
 .text__sloganTitle {
     font-weight: 400;
     font-size: 32px;
-    letter-spacing: 0px;
-    color: rgba(32, 32, 32, 1);
 }
 
 .text__sloganImg {
@@ -53,26 +45,14 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
     gap: 40px;
-    margin-bottom: 34px;
 }
 
-.container__btn {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-}
-
-.container__btnUp {
-    width: 127px;
-    text-align: center;
-}
-
-/* 👇 Контейнер для модального окна поверх контента */
+/* Контейнер для модального окна поверх контента */
 .modalWrapper {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

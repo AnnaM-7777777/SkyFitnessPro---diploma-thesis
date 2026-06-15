@@ -1,54 +1,57 @@
-import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
-import { useAuth } from "@/context/AuthContext";
-import styles from "./Header.module.css";
-import Logo from "../../components/Logo/Logo";
+import { useState, useEffect, useRef } from "react"
+import Link from "next/link"
+import Image from "next/image"
+import { useAuth } from "@/context/AuthContext"
+import styles from "./Header.module.css"
+import Logo from "../../components/Logo/Logo"
 
-export default function Header() {
-    const { user, logout, isLoading } = useAuth();
+interface HeaderProps {
+    showTitle?: boolean // По умолчанию true
+}
+
+export default function Header({ showTitle = true }: HeaderProps) {
+    const { user, logout, isLoading } = useAuth()
 
     // Стейт для управления меню профиля
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const menuRef = useRef<HTMLDivElement>(null);
+    const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const menuRef = useRef<HTMLDivElement>(null)
 
     // Закрыть меню при клике вне его области
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (
-                menuRef.current &&
-                !menuRef.current.contains(event.target as Node)
-            ) {
-                setIsMenuOpen(false);
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setIsMenuOpen(false)
             }
-        };
+        }
 
         if (isMenuOpen) {
-            document.addEventListener("mousedown", handleClickOutside);
+            document.addEventListener("mousedown", handleClickOutside)
         }
 
         return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, [isMenuOpen]);
+            document.removeEventListener("mousedown", handleClickOutside)
+        }
+    }, [isMenuOpen])
 
     // Обработчик выхода
     const handleLogout = async () => {
         try {
-            await logout();
-            setIsMenuOpen(false);
+            await logout()
+            setIsMenuOpen(false)
         } catch (err) {
-            console.error("Ошибка при выходе:", err);
+            console.error("Ошибка при выходе:", err)
         }
-    };
+    }
 
     return (
         <header className={styles.header}>
             <div className={styles.header__container}>
                 <Logo />
 
-                <p className={styles.container__text}>
-                    Онлайн-тренировки для занятий дома
-                </p>
+                {/* Условный рендеринг заголовка */}
+                {showTitle && (
+                    <p className={styles.header__text}>Онлайн-тренировки для занятий дома</p>
+                )}
             </div>
 
             <div className={styles.header__auth}>
@@ -61,20 +64,38 @@ export default function Header() {
                     // Пользователь АВТОРИЗОВАН → показываем меню профиля
                     <div className={styles.header__profileMenu} ref={menuRef}>
                         <button
-                            className={styles.header__profileButton}
+                            className={styles.profileMenu__btn}
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                             aria-expanded={isMenuOpen}
                             aria-label="Меню профиля"
                         >
-                            <span className={styles.header__userName}>
-                                {user.email?.split("@")[0] || "Профиль"}
+                            {/* Универсальная иконка аватара */}
+                            <div className={styles.profileMenu__userAvatar}>
+                                <Image
+                                    src="/img/icon.png"
+                                    alt="Аватар"
+                                    width={42}
+                                    height={42}
+                                    priority
+                                    style={{
+                                        objectFit: "cover",
+                                        borderRadius: "50%",
+                                    }}
+                                />
+                            </div>
+
+                            {/* Имя пользователя */}
+                            <span className={styles.profileMenu__userName}>
+                                {user.name || user.email?.split("@")[0] || "Профиль"}
                             </span>
+
+                            {/* Стрелка */}
                             <svg
-                                className={`${styles.header__chevron} ${
-                                    isMenuOpen ? styles.header__chevronUp : ""
+                                className={`${styles.profileMenu__chevron} ${
+                                    isMenuOpen ? styles.profileMenu__chevronUp : ""
                                 }`}
-                                width="16"
-                                height="16"
+                                width="20"
+                                height="20"
                                 viewBox="0 0 16 16"
                                 fill="none"
                                 aria-hidden="true"
@@ -89,57 +110,25 @@ export default function Header() {
                             </svg>
                         </button>
 
+                        {/* Выпадающее меню профиля */}
                         {isMenuOpen && (
                             <div className={styles.header__dropdownMenu}>
-                                <div className={styles.header__userInfo}>
-                                    <div
-                                        className={
-                                            styles.header__userInfoAvatar
-                                        }
-                                    >
-                                        <svg
-                                            width="32"
-                                            height="32"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            aria-hidden="true"
-                                        >
-                                            <path
-                                                d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
-                                                fill="currentColor"
-                                            />
-                                        </svg>
-                                    </div>
-                                    <div
-                                        className={styles.header__userInfoText}
-                                    >
-                                        <div
-                                            className={
-                                                styles.header__userInfoName
-                                            }
-                                        >
-                                            Профиль
-                                        </div>
-                                        <div
-                                            className={
-                                                styles.header__userInfoEmail
-                                            }
-                                        >
-                                            {user.email}
-                                        </div>
-                                    </div>
+                                <div className={styles.dropdownMenu__userName}>
+                                    {user.name || "Пользователь"}
                                 </div>
+
+                                <div className={styles.dropdownMenu__userEmail}>{user.email}</div>
 
                                 <Link
                                     href="/profile"
-                                    className={`${styles.header__menuButton} ${styles.btnPrimary}`}
+                                    className={`${styles.dropdownMenu__btn} btn-primary`}
                                     onClick={() => setIsMenuOpen(false)}
                                 >
                                     Мой профиль
                                 </Link>
 
                                 <button
-                                    className={`${styles.header__menuButton} ${styles.btnOutline}`}
+                                    className={`${styles.dropdownMenu__btn} btn-secondary`}
                                     onClick={handleLogout}
                                 >
                                     Выйти
@@ -149,14 +138,11 @@ export default function Header() {
                     </div>
                 ) : (
                     // Пользователь НЕ авторизован → показываем кнопку "Войти"
-                    <Link
-                        href="/?modal=login"
-                        className={`${styles.header__btnLogin} btn-primary`}
-                    >
+                    <Link href="/?modal=login" className={`${styles.header__btnLogin} btn-primary`}>
                         Войти
                     </Link>
                 )}
             </div>
         </header>
-    );
+    )
 }
