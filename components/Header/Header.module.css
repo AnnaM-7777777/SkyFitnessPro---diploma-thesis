@@ -62,14 +62,9 @@
     cursor: pointer;
     border: none;
     border-radius: 30px;
-    padding: 12px 16px;
     transition:
         background 0.3s ease,
         transform 0.2s ease;
-}
-
-.profileMenu__btn:hover {
-    background: var(--btn-secondary-active);
 }
 
 .profileMenu__userAvatar {
@@ -141,4 +136,20 @@
 
 .dropdownMenu__btn {
     width: 100%;
+}
+
+/* Мобильные устройства (до 768px) */
+@media (max-width: 768px) {
+    .header {
+        padding: 40px 16px;
+    }
+    
+    .header__text,
+    .profileMenu__userName {
+        display: none;
+    }
+
+    .profileMenu__userAvatar {
+        margin-right: 13px;
+    }
 }

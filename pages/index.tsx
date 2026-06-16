@@ -67,17 +67,17 @@ export default function HomePage() {
                     </h1>
 
                     <div className={styles.text__sloganWrapper}>
-                        <div className={styles.text__slogan}>
+                        <div className={styles.text__sloganBlock}>
                             <p className={styles.text__sloganTitle}>Измени своё тело за полгода!</p>
+                            <Image
+                                className={styles.text__sloganImg}
+                                src="/img/sloganImg.png"
+                                width={30}
+                                height={35}
+                                alt="SkyFitnessPro"
+                                priority
+                            />
                         </div>
-                        <Image
-                            className={styles.text__sloganImg}
-                            src="/img/sloganImg.png"
-                            width={30}
-                            height={35}
-                            alt="SkyFitnessPro"
-                            priority
-                        />
                     </div>
                 </section>
 

@@ -52,6 +52,13 @@ export default function CourseCard({ course }: CourseCardProps) {
         COURSE_IMAGES[title.split(" ")[0]] ||
         "/img/1-yoga-l.png"
 
+    const [hasHover, setHasHover] = useState(false)
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia("(hover: hover) and (pointer: fine)")
+        setHasHover(mediaQuery.matches)
+    }, [])
+
     // Правильно читаем вложенный объект user
     useEffect(() => {
         if (!token) {
@@ -184,10 +191,17 @@ export default function CourseCard({ course }: CourseCardProps) {
         }
     }
 
-    const handleMouseEnter = () => setShowCustomCursor(true)
-    const handleMouseLeave = () => setShowCustomCursor(false)
+    const handleMouseEnter = () => {
+        if (hasHover) setShowCustomCursor(true)
+    }
+    const handleMouseLeave = () => {
+        if (hasHover) setShowCustomCursor(false)
+    }
 
+    // Обработчик движения мыши — только для десктопа
     useEffect(() => {
+        if (!hasHover) return
+
         const handleMouseMove = (e: MouseEvent) => {
             setCursorPos({
                 x: e.clientX,
@@ -197,7 +211,7 @@ export default function CourseCard({ course }: CourseCardProps) {
 
         window.addEventListener("mousemove", handleMouseMove)
         return () => window.removeEventListener("mousemove", handleMouseMove)
-    }, [])
+    }, [hasHover])
 
     return (
         <>
