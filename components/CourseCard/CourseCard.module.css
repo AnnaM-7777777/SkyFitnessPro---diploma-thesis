@@ -111,7 +111,7 @@
     
     /* Возвращаем стандартный курсор */
     .cards__btnAddCourse:hover {
-        cursor: pointer !important;
+        cursor: pointer;
     }
 }
 
