@@ -19,16 +19,16 @@ type UserData = {
 }
 
 const COURSE_IMAGES: Record<string, string> = {
-    Йога: "/img/1-yoga-l.png",
-    Стретчинг: "/img/2-stretching-l.png",
-    Фитнес: "/img/3-fitness-l.png",
-    "Степ-аэробика": "/img/4-aerobics-l.png",
-    Бодифлекс: "/img/5-bodyflex-l.png",
-    Yoga: "/img/1-yoga-l.png",
-    Stretching: "/img/2-stretching-l.png",
-    Fitness: "/img/3-fitness-l.png",
-    Aerobics: "/img/4-aerobics-l.png",
-    Bodyflex: "/img/5-bodyflex-l.png",
+    Йога: "/img/1-yoga.jpg",
+    Стретчинг: "/img/2-stretching.jpg",
+    Фитнес: "/img/3-fitness.jpg",
+    "Степ-аэробика": "/img/4-aerobics.jpg",
+    Бодифлекс: "/img/5-bodyflex.jpg",
+    Yoga: "/img/1-yoga.jpg",
+    Stretching: "/img/2-stretching.jpg",
+    Fitness: "/img/3-fitness.jpg",
+    Aerobics: "/img/4-aerobics.jpg",
+    Bodyflex: "/img/5-bodyflex.jpg",
 }
 
 export default function CourseCard({ course }: CourseCardProps) {
@@ -50,7 +50,7 @@ export default function CourseCard({ course }: CourseCardProps) {
         course.image ||
         COURSE_IMAGES[title] ||
         COURSE_IMAGES[title.split(" ")[0]] ||
-        "/img/1-yoga-l.png"
+        "/img/1-yoga.jpg"
 
     const [hasHover, setHasHover] = useState(false)
 

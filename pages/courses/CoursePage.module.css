@@ -54,12 +54,13 @@
     line-height: 110%;
     color: var(--text-secondary);
     margin: 40px 0 0 40px;
+    flex: 1;
 }
 
 .header__image {
-    flex: 1;
     height: 100%;
-    min-width: 300px;
+    width: 100%;
+    max-width: 545px;
 }
 
 /* Описание курса */
@@ -224,9 +225,16 @@
 }
 
 @media (max-width: 1024px) {
+    .header__title {
+        font-weight: 500;
+        font-size: 34px;
+        margin: 30px 0 0 30px;
+    }
+
     .cta {
         height: auto;
     }
+
     .cta__imagesContainer,
     .cta__image {
         display: none;
@@ -244,7 +252,7 @@
     .page {
         padding: 0 16px 128px;
         position: relative;
-    overflow: hidden;
+        overflow: hidden;
     }
 
     /* Заголовки разделов */
@@ -260,10 +268,41 @@
     .header {
         flex-direction: column;
         text-align: center;
+        height: 389px;
     }
 
     .header__content {
         display: none;
+    }
+
+    /* Мобильные настройки фона для каждого курса */
+    .header__image {
+        max-width: 100%;
+    }
+    .header__image_yoga {
+        background-size: auto 145% !important;
+        background-position: center -60px !important;
+    }
+
+    .header__image_stretching {
+        background-size: auto 100% !important;
+        background-position: center bottom !important;
+        background-position: center 0 !important;
+    }
+
+    .header__image_fitness {
+        background-size: auto 100% !important;
+        background-position: center 0 !important;
+    }
+
+    .header__image_aerobics {
+        background-size: auto 110% !important;
+        background-position: center -20px !important;
+    }
+
+    .header__image_bodyflex {
+        background-size: auto 120% !important;
+        background-position: center -40px !important;
     }
 
     /* Описание курса */

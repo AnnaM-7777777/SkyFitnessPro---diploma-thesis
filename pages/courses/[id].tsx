@@ -21,50 +21,56 @@ const getCourseThemeByTitle = (title: string) => {
 
     if (lowerTitle.includes("йог")) {
         return {
-            image: "/img/1-yoga-b.jpg",
+            image: "/img/1-yoga.jpg",
             color: "rgba(255, 199, 0, 1)",
-            backgroundSize: "auto 100%",
-            backgroundPosition: "right",
+            backgroundSize: "auto 220%",
+            backgroundPosition: "center -230px",
+            mobileClass: styles.header__image_yoga,
         }
     }
     if (lowerTitle.includes("стретч") || lowerTitle.includes("растяж")) {
         return {
-            image: "/img/2-stretching-b.jpg",
+            image: "/img/2-stretching.jpg",
             color: "rgba(36, 145, 210, 1)",
-            backgroundSize: "auto 100%",
-            backgroundPosition: "right",
+            backgroundSize: "auto 175%",
+            backgroundPosition: "right 0",
+            mobileClass: styles.header__image_stretching,
         }
     }
     if (lowerTitle.includes("фитнес") || lowerTitle.includes("fitness")) {
         return {
-            image: "/img/3-fitness-b.jpg",
+            image: "/img/3-fitness.jpg",
             color: "rgba(247, 160, 18, 1)",
-            backgroundSize: "auto 100%",
-            backgroundPosition: "right",
+            backgroundSize: "auto 250%",
+            backgroundPosition: "center -35px",
+            mobileClass: styles.header__image_fitness,
         }
     }
     if (lowerTitle.includes("аэроб") || lowerTitle.includes("aerob")) {
         return {
-            image: "/img/4-aerobics-b.jpg",
+            image: "/img/4-aerobics.jpg",
             color: "rgba(255, 126, 101, 1)",
-            backgroundSize: "auto 100%",
-            backgroundPosition: "right",
+            backgroundSize: "auto 350%",
+            backgroundPosition: "right -720px",
+            mobileClass: styles.header__image_aerobics,
         }
     }
     if (lowerTitle.includes("бодифлекс") || lowerTitle.includes("bodyflex")) {
         return {
-            image: "/img/5-bodyflex-b.jpg",
+            image: "/img/5-bodyflex.jpg",
             color: "rgba(125, 69, 140, 1)",
-            backgroundSize: "auto 100%",
-            backgroundPosition: "right",
+            backgroundSize: "auto 165%",
+            backgroundPosition: "center -165px",
+            mobileClass: styles.header__image_bodyflex,
         }
     }
 
     return {
-        image: "/img/1-yoga-b.jpg",
+        image: "/img/1-yoga.jpg",
         color: "rgba(255, 199, 0, 1)",
-        backgroundSize: "auto 100%",
-        backgroundPosition: "right",
+        backgroundSize: "auto 220%",
+        backgroundPosition: "center -230px",
+        mobileClass: styles.header__image_yoga,
     }
 }
 
@@ -173,7 +179,7 @@ export default function CoursePage() {
         return (
             <Layout showTitle={true} showScrollToTop={true}>
                 <div className={styles.notFound}>
-                    <p className={styles.notFound__text}>Курс не найден 😔</p>
+                    <p className={styles.notFound__text}>Курс не найден </p>
 
                     <Link href="/" className={`${styles.notFound__btn} btn-primary`}>
                         ← На главную
@@ -190,6 +196,7 @@ export default function CoursePage() {
         color: courseColor,
         backgroundSize,
         backgroundPosition,
+        mobileClass,
     } = getCourseThemeByTitle(title)
 
     return (
@@ -202,7 +209,7 @@ export default function CoursePage() {
                     </div>
 
                     <div
-                        className={styles.header__image}
+                        className={`${styles.header__image} ${mobileClass}`}
                         style={{
                             backgroundImage: `url(${courseImage})`,
                             backgroundSize: backgroundSize || "cover",
@@ -283,7 +290,6 @@ export default function CoursePage() {
                     <div className={styles.cta__content}>
                         <h2 className={styles.cta__title}>Начните путь к новому телу</h2>
 
-                        {/* Исправлена проверка benefits */}
                         <ul className={styles.cta__benefits}>
                             {(course.benefits?.length
                                 ? course.benefits
@@ -299,7 +305,6 @@ export default function CoursePage() {
                             ))}
                         </ul>
 
-                        {/* Кнопки */}
                         {!user ? (
                             <button
                                 onClick={handleAddCourse}
