@@ -76,7 +76,7 @@
     width: 100%;
 }
 
-/* Кастомный курсор */
+/* Кастомный курсор - скрыт по умолчанию */
 .customCursor {
     position: fixed;
     pointer-events: none;
@@ -88,10 +88,6 @@
     gap: 8px;
     white-space: nowrap;
     transition: opacity 0.1s;
-}
-
-.customCursor_visible {
-    opacity: 1;
 }
 
 .customCursor__arrow {
@@ -113,4 +109,18 @@
     line-height: 110%;
     color: rgba(32, 32, 32, 1);
     transform: translateY(25px) translateX(-10px);
+}
+
+/* Мобильные устройства (до 768px) — курсор скрыт */
+@media (max-width: 768px) {
+    .customCursor {
+        display: none !important;
+    }
+}
+
+/* Десктоп (от 769px) — показываем кастомный курсор */
+@media (min-width: 769px) {
+    .customCursor_visible {
+        opacity: 1;
+    }
 }

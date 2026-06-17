@@ -46,6 +46,28 @@ const COURSE_IMAGES: Record<string, string> = {
     Bodyflex: "/img/5-bodyflex.jpg",
 }
 
+// Определяем класс для позиционирования фона по названию курса
+// (аналогично CourseCard, используем классы из courseStyles)
+const getCourseBgClass = (title: string): string => {
+    const lowerTitle = title.toLowerCase()
+
+    if (lowerTitle.includes("йог") || lowerTitle.includes("yoga")) return courseStyles.bg_yoga
+    if (
+        lowerTitle.includes("стретч") ||
+        lowerTitle.includes("растяж") ||
+        lowerTitle.includes("stretching")
+    )
+        return courseStyles.bg_stretching
+    if (lowerTitle.includes("фитнес") || lowerTitle.includes("fitness"))
+        return courseStyles.bg_fitness
+    if (lowerTitle.includes("аэроб") || lowerTitle.includes("aerob"))
+        return courseStyles.bg_aerobics
+    if (lowerTitle.includes("бодифлекс") || lowerTitle.includes("bodyflex"))
+        return courseStyles.bg_bodyflex
+
+    return courseStyles.bg_yoga
+}
+
 export default function MyCourses() {
     const { token } = useAuth()
     const router = useRouter()
@@ -60,6 +82,14 @@ export default function MyCourses() {
         message: string
         type: "error" | "success"
     } | null>(null)
+
+    // Защита курсора от мобильных устройств
+    const [hasHover, setHasHover] = useState(false)
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia("(hover: hover) and (pointer: fine)")
+        setHasHover(mediaQuery.matches)
+    }, [])
 
     // Функция загрузки курсов (вынесена отдельно)
     const fetchMyCourses = async (isRefresh = false) => {
@@ -317,11 +347,17 @@ export default function MyCourses() {
         }
     }
 
-    // Кастомный курсор
-    const handleMouseEnter = () => setShowCustomCursor(true)
-    const handleMouseLeave = () => setShowCustomCursor(false)
+    // Кастомный курсор — с защитой от мобильных
+    const handleMouseEnter = () => {
+        if (hasHover) setShowCustomCursor(true)
+    }
+    const handleMouseLeave = () => {
+        if (hasHover) setShowCustomCursor(false)
+    }
 
     useEffect(() => {
+        if (!hasHover) return
+
         const handleMouseMove = (e: MouseEvent) => {
             setCursorPos({
                 x: e.clientX,
@@ -331,7 +367,7 @@ export default function MyCourses() {
 
         window.addEventListener("mousemove", handleMouseMove)
         return () => window.removeEventListener("mousemove", handleMouseMove)
-    }, [])
+    }, [hasHover])
 
     if (loading) {
         return <div className={styles.loading}>Загрузка курсов...</div>
@@ -360,20 +396,19 @@ export default function MyCourses() {
                         course.image ||
                         COURSE_IMAGES[title] ||
                         COURSE_IMAGES[title.split(" ")[0]] ||
-                        "/img/1-yoga.png"
+                        "/img/1-yoga.jpg"
+
+                    // Получаем класс для позиционирования фона
+                    const bgClass = getCourseBgClass(title)
 
                     return (
                         <article key={course._id} className={courseStyles.cards__course}>
-                            <div className={courseStyles.cards__bg}>
-                                <Image
-                                    src={bgImage}
-                                    alt={title}
-                                    fill
-                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                    style={{ objectFit: "cover" }}
-                                    priority
-                                />
-
+                            <div
+                                className={`${courseStyles.cards__bg} ${bgClass}`}
+                                style={{
+                                    backgroundImage: `url("${bgImage}")`,
+                                }}
+                            >
                                 <button
                                     className={courseStyles.cards__btnAddCourse}
                                     aria-label="Удалить курс"
@@ -458,7 +493,7 @@ export default function MyCourses() {
                                             course.hasProgress || false
                                         )
                                     }
-                                    disabled={isNavigating} // Блокируем во время перехода
+                                    disabled={isNavigating}
                                 >
                                     {isNavigating
                                         ? "Загрузка..."

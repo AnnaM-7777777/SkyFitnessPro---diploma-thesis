@@ -50,3 +50,31 @@
     width: 192px;
     margin-top: 14px;
 }
+
+@media (max-width: 768px) {
+    .profile {
+        display: flex;
+        gap: 30px;
+        flex-direction: column;
+        margin: 24px 0;
+    }
+
+    .profile__userInfo {
+        flex-direction: column;
+        gap: 20px;
+        width: 100%;
+    }
+
+    .profile__name {
+       font-size: 24px;
+    }
+
+    .profile__login {
+        font-size: 16px;
+    }
+
+    .profile__logout {
+        width: 100%;
+        margin-top: 0;
+    }
+}
