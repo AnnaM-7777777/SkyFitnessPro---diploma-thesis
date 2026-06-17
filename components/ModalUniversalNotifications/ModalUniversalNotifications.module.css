@@ -71,3 +71,23 @@
 .buttons__confirmBtn {
     width: 100%;
 }
+
+@media (max-width: 768px) {
+    .modal {
+        padding: 30px;
+    }
+
+    .successModal__title,
+    .confirmModal__title {
+        font-weight: 500;
+        font-size: 32px;
+    }
+
+    .confirmModal__message {
+        font-size: 18px;
+    }
+
+    .confirmModal__buttons {
+        flex-direction: column;
+    }
+}
