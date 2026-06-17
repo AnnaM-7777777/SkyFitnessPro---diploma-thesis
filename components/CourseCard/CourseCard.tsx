@@ -12,7 +12,6 @@ interface CourseCardProps {
     course: Course
 }
 
-// Тип теперь описывает вложенность, как возвращает сервер
 type UserData = {
     email: string
     selectedCourses: string[]
@@ -29,6 +28,25 @@ const COURSE_IMAGES: Record<string, string> = {
     Fitness: "/img/3-fitness.jpg",
     Aerobics: "/img/4-aerobics.jpg",
     Bodyflex: "/img/5-bodyflex.jpg",
+}
+
+// Определяем класс для позиционирования фона по названию курса
+const getCourseBgClass = (title: string): string => {
+    const lowerTitle = title.toLowerCase()
+
+    if (lowerTitle.includes("йог") || lowerTitle.includes("yoga")) return styles.bg_yoga
+    if (
+        lowerTitle.includes("стретч") ||
+        lowerTitle.includes("растяж") ||
+        lowerTitle.includes("stretching")
+    )
+        return styles.bg_stretching
+    if (lowerTitle.includes("фитнес") || lowerTitle.includes("fitness")) return styles.bg_fitness
+    if (lowerTitle.includes("аэроб") || lowerTitle.includes("aerob")) return styles.bg_aerobics
+    if (lowerTitle.includes("бодифлекс") || lowerTitle.includes("bodyflex"))
+        return styles.bg_bodyflex
+
+    return styles.bg_yoga
 }
 
 export default function CourseCard({ course }: CourseCardProps) {
@@ -52,6 +70,8 @@ export default function CourseCard({ course }: CourseCardProps) {
         COURSE_IMAGES[title.split(" ")[0]] ||
         "/img/1-yoga.jpg"
 
+    const bgClass = getCourseBgClass(title)
+
     const [hasHover, setHasHover] = useState(false)
 
     useEffect(() => {
@@ -59,7 +79,6 @@ export default function CourseCard({ course }: CourseCardProps) {
         setHasHover(mediaQuery.matches)
     }, [])
 
-    // Правильно читаем вложенный объект user
     useEffect(() => {
         if (!token) {
             setIsAdded(false)
@@ -111,7 +130,6 @@ export default function CourseCard({ course }: CourseCardProps) {
         checkIfAdded()
     }, [token, course._id])
 
-    // Добавление курса
     const handleAddCourse = async () => {
         if (!user) {
             setToast({
@@ -127,9 +145,8 @@ export default function CourseCard({ course }: CourseCardProps) {
                 body: JSON.stringify({ courseId: course._id }),
             })
 
-            setIsAdded(true) // Мгновенно меняем кнопку на "-"
-
-            sessionStorage.removeItem("user_data_cache") // Очищаем кэш
+            setIsAdded(true)
+            sessionStorage.removeItem("user_data_cache")
 
             setToast({
                 message: "Курс успешно добавлен!",
@@ -139,9 +156,7 @@ export default function CourseCard({ course }: CourseCardProps) {
         } catch (err: unknown) {
             if (err instanceof Error && err.message.includes("уже был добавлен")) {
                 setIsAdded(true)
-
-                sessionStorage.removeItem("user_data_cache") // Очищаем кэш
-
+                sessionStorage.removeItem("user_data_cache")
                 return
             }
 
@@ -154,7 +169,6 @@ export default function CourseCard({ course }: CourseCardProps) {
         }
     }
 
-    // Удаление курса
     const handleRemoveCourse = async () => {
         if (!user) return
 
@@ -163,8 +177,7 @@ export default function CourseCard({ course }: CourseCardProps) {
                 method: "DELETE",
             })
 
-            setIsAdded(false) // Мгновенно меняем кнопку на "+"
-
+            setIsAdded(false)
             sessionStorage.removeItem("user_data_cache")
 
             setToast({
@@ -182,7 +195,6 @@ export default function CourseCard({ course }: CourseCardProps) {
         }
     }
 
-    // Обработчик клика — переключение
     const handleToggleCourse = () => {
         if (isAdded) {
             handleRemoveCourse()
@@ -198,7 +210,6 @@ export default function CourseCard({ course }: CourseCardProps) {
         if (hasHover) setShowCustomCursor(false)
     }
 
-    // Обработчик движения мыши — только для десктопа
     useEffect(() => {
         if (!hasHover) return
 
@@ -216,16 +227,12 @@ export default function CourseCard({ course }: CourseCardProps) {
     return (
         <>
             <article className={styles.cards__course}>
-                <div className={styles.cards__bg}>
-                    <Image
-                        src={bgImage}
-                        alt=""
-                        fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        style={{ objectFit: "cover" }}
-                        priority
-                    />
-
+                <div
+                    className={`${styles.cards__bg} ${bgClass}`}
+                    style={{
+                        backgroundImage: `url("${bgImage}")`,
+                    }}
+                >
                     <button
                         className={styles.cards__btnAddCourse}
                         aria-label={isAdded ? "Удалить курс" : "Добавить курс"}
@@ -307,7 +314,6 @@ export default function CourseCard({ course }: CourseCardProps) {
                 </div>
             </div>
 
-            {/* Toast-уведомление */}
             {toast && (
                 <Toast
                     key={toast.message}

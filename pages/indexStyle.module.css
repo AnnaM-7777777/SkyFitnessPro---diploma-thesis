@@ -63,6 +63,12 @@
 
 /* Мобильные устройства (до 1024px) */
 @media (max-width: 1024px) {
+    /* Блок карточек */
+    .container__cards {
+        /* grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); */
+        gap: 30px;
+    }
+
     .text__title {
         font-size: 42px;
     }
