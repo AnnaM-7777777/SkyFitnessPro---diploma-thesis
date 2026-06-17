@@ -48,7 +48,7 @@
 .form {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 10px;
     margin-top: 48px;
 }
 
@@ -57,7 +57,7 @@
     padding: 16px 20px;
     border: var(--border-input);
     border-radius: 12px;
-    font-size: 16px;
+    font-size: 18px;
     font-family: inherit;
     transition:
         border-color 0.2s ease,
@@ -67,6 +67,7 @@
 
 .input::placeholder {
     color: var(--text-placeholder);
+    font-size: 18px;
 }
 
 .input:focus {
@@ -101,4 +102,15 @@
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
+}
+
+.btnAuthTop {
+    margin-top: 24px;
+}
+
+@media (max-width: 768px) {
+    .authModal {
+        padding: 40px 32px;
+        margin: 0 16px;
+    }
 }

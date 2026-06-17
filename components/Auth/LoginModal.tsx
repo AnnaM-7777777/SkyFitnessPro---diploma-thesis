@@ -123,7 +123,7 @@ export default function LoginModal({ onClose }: LoginModalProps) {
 
                         <button
                             type="submit"
-                            className={`${styles.btnAuth} btn-primary`}
+                            className={`${styles.btnAuth} ${styles.btnAuthTop} btn-primary`}
                             disabled={isLoading}
                         >
                             {isLoading ? "Вход..." : "Войти"}

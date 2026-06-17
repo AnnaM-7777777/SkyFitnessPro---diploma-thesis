@@ -152,7 +152,7 @@ export default function RegisterModal({ onClose }: RegisterModalProps) {
                         {error && <div className={styles.error}>{error}</div>}
                         <button
                             type="submit"
-                            className={`${styles.btnAuth} btn-primary`}
+                            className={`${styles.btnAuth} ${styles.btnAuthTop} btn-primary`}
                             disabled={isLoading}
                         >
                             {isLoading ? "Регистрация..." : "Зарегистрироваться"}
