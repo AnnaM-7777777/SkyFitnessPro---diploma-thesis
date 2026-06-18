@@ -34,16 +34,6 @@
     padding-bottom: 280px;
 }
 
-/* Карточка курса */
-.courseCard {
-    position: relative;
-    background-color: var(--bg-secondary);
-    border-radius: 30px;
-    overflow: hidden;
-    box-shadow: var(--shadow-all);
-    transition: transform 0.2s;
-}
-
 /* Блок прогресса */
 .progressBlock {
     margin: 20px 0 40px;
@@ -111,10 +101,24 @@
     transform: translateY(25px) translateX(-10px);
 }
 
+/* Мобильные устройства (до 1024px) */
+@media (max-width: 1024px) {
+    /* Блок карточек */
+    .myCourses {
+        gap: 30px;
+    }
+}
+
+
 /* Мобильные устройства (до 768px) — курсор скрыт */
 @media (max-width: 768px) {
     .customCursor {
         display: none !important;
+    }
+
+    /* Блок карточек */
+    .myCourses {
+        gap: 24px;
     }
 }
 

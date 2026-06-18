@@ -202,11 +202,7 @@
     }
 
     .title {
-        font-weight: 400;
-        font-size: 32px;
-        line-height: 110%;
         text-align: left;
-        margin-bottom: 0;
     }
 
     .workoutName {

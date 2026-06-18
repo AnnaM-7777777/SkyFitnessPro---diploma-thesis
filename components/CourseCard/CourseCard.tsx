@@ -1,7 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect } from "react"
-import { useRouter } from "next/router"
 import { useAuth } from "@/context/AuthContext"
 import { apiFetch } from "@/libs/apiConfig"
 import Toast from "@/components/Toast/Toast"
@@ -50,7 +49,6 @@ const getCourseBgClass = (title: string): string => {
 }
 
 export default function CourseCard({ course }: CourseCardProps) {
-    const router = useRouter()
     const { user, token } = useAuth()
     const [isAdded, setIsAdded] = useState(false)
     const [loading, setLoading] = useState(true)
@@ -88,25 +86,19 @@ export default function CourseCard({ course }: CourseCardProps) {
 
         const checkIfAdded = async () => {
             try {
-                const cachedData = sessionStorage.getItem("user_data_cache")
                 let selectedCourses: string[] = []
+                const cachedData = sessionStorage.getItem("user_data_cache")
 
+                // Пробуем взять из кэша
                 if (cachedData) {
                     const { data, timestamp } = JSON.parse(cachedData)
                     if (Date.now() - timestamp < 30000) {
                         selectedCourses = data
-                    } else {
-                        const response = await apiFetch<{ user: UserData }>("/users/me")
-                        selectedCourses = response.user.selectedCourses || []
-                        sessionStorage.setItem(
-                            "user_data_cache",
-                            JSON.stringify({
-                                data: selectedCourses,
-                                timestamp: Date.now(),
-                            })
-                        )
                     }
-                } else {
+                }
+
+                // Если кэш пустой или устарел — делаем запрос
+                if (selectedCourses.length === 0) {
                     const response = await apiFetch<{ user: UserData }>("/users/me")
                     selectedCourses = response.user.selectedCourses || []
                     sessionStorage.setItem(
@@ -119,7 +111,7 @@ export default function CourseCard({ course }: CourseCardProps) {
                 }
 
                 const isCourseAdded = selectedCourses.includes(course._id)
-                setIsAdded(isCourseAdded || false)
+                setIsAdded(isCourseAdded)
             } catch (err) {
                 console.error("Ошибка проверки курса:", err)
             } finally {

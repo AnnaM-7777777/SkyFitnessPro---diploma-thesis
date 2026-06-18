@@ -38,13 +38,6 @@
     z-index: 300;
 }
 
-.authModal__linkLogo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 48px;
-}
-
 .form {
     display: flex;
     flex-direction: column;

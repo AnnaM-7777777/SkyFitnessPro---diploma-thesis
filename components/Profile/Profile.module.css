@@ -16,14 +16,6 @@
     border-radius: 20px;
     overflow: hidden;
     position: relative;
-    transition:
-        transform 0.2s,
-        box-shadow 0.2s;
-}
-
-.profile__avatar img {
-    width: 100%;
-    height: 100%;
 }
 
 .profile__userInfo {
@@ -60,7 +52,6 @@
     }
 
     .profile__userInfo {
-        flex-direction: column;
         gap: 20px;
         width: 100%;
     }

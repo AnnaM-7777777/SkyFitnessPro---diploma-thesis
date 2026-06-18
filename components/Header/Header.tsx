@@ -33,6 +33,23 @@ export default function Header({ showTitle = true }: HeaderProps) {
         }
     }, [isMenuOpen])
 
+    // Закрыть меню при нажатии Escape
+    useEffect(() => {
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === "Escape" && isMenuOpen) {
+                setIsMenuOpen(false)
+            }
+        }
+
+        if (isMenuOpen) {
+            document.addEventListener("keydown", handleEscape)
+        }
+
+        return () => {
+            document.removeEventListener("keydown", handleEscape)
+        }
+    }, [isMenuOpen])
+
     // Обработчик выхода
     const handleLogout = async () => {
         try {

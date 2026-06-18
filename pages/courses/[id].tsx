@@ -120,7 +120,7 @@ export default function CoursePage() {
                 const response = await apiFetch<{ user: UserData }>("/users/me")
                 const userData = response.user
                 const isCourseAdded = userData.selectedCourses?.includes(courseId)
-                setIsAdded(isCourseAdded || false)
+                setIsAdded(isCourseAdded)
             } catch (err) {
                 console.error("Ошибка проверки курса:", err)
             }

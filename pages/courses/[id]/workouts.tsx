@@ -42,6 +42,12 @@ export default function WorkoutsPage() {
         return Array.isArray(id) ? id[0] : id
     }, [id])
 
+    // Нормализуем selected через useMemo (защита от массива)
+    const selectedId = useMemo(() => {
+        if (!selected) return ""
+        return Array.isArray(selected) ? selected[0] : selected
+    }, [selected])
+
     const [workouts, setWorkouts] = useState<WorkoutWithProgress[]>([])
     const [loading, setLoading] = useState(true)
     const [activeWorkout, setActiveWorkout] = useState<WorkoutWithProgress | null>(null)
@@ -187,7 +193,7 @@ export default function WorkoutsPage() {
 
     // Автопрокрутка к выбранной тренировке
     useEffect(() => {
-        if (selected && selectedRef.current && workouts.length > 0) {
+        if (selectedId && selectedRef.current && workouts.length > 0) {
             setTimeout(() => {
                 selectedRef.current?.scrollIntoView({
                     behavior: "smooth",
@@ -195,7 +201,7 @@ export default function WorkoutsPage() {
                 })
             }, 300)
         }
-    }, [selected, workouts])
+    }, [selectedId, workouts])
 
     const getYouTubeId = (url: string) => {
         if (!url) return null
@@ -236,18 +242,34 @@ export default function WorkoutsPage() {
             )
 
             if (!fullWorkout.exercises || fullWorkout.exercises.length === 0) {
-                await apiFetch(`/courses/${courseId}/workouts/${workout._id}`, {
-                    method: "PATCH",
-                    body: JSON.stringify({ progressData: [] }),
-                })
-
                 setModal({
-                    type: "success",
-                    title: "Тренировка отмечена как завершённая!",
-                    autoClose: 2000,
-                })
+                    type: "confirm",
+                    title: "Тренировка не содержит упражнений",
+                    message: "Засчитать прогресс и отметить как завершённую?",
+                    onConfirm: async () => {
+                        try {
+                            await apiFetch(`/courses/${courseId}/workouts/${workout._id}`, {
+                                method: "PATCH",
+                                body: JSON.stringify({ progressData: [] }),
+                            })
 
-                handleProgressSaved()
+                            setModal({
+                                type: "success",
+                                title: "Тренировка отмечена как завершённая!",
+                                autoClose: 2000,
+                            })
+
+                            handleProgressSaved()
+                        } catch (err) {
+                            setModal({
+                                type: "error",
+                                title: "Ошибка",
+                                message: "Не удалось сохранить прогресс",
+                                autoClose: 3000,
+                            })
+                        }
+                    },
+                })
                 return
             }
 
@@ -359,7 +381,7 @@ export default function WorkoutsPage() {
 
                 {workouts.map((workout) => {
                     const videoId = getYouTubeId(workout.video)
-                    const isSelected = selected === workout._id
+                    const isSelected = selectedId === workout._id
                     const hasProgress =
                         workout.exerciseProgress?.some((ep) => ep.progress > 0) ?? false
 

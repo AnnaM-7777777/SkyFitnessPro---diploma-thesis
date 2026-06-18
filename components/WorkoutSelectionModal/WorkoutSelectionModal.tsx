@@ -95,7 +95,7 @@ export default function WorkoutSelectionModal({ courseId, onClose }: WorkoutSele
                                 <div className={styles.workoutInfo}>
                                     <div className={styles.workoutName}>{workout.name}</div>
                                     <div className={styles.workoutMeta}>
-                                        {workout.exercises.length} упражнений
+                                        {workout.exercises?.length || 0} упражнений
                                     </div>
                                 </div>
                             </label>

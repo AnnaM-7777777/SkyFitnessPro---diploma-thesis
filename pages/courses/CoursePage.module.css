@@ -267,7 +267,6 @@
 
     .header__image_stretching {
         background-size: auto 100% !important;
-        background-position: center bottom !important;
         background-position: center 0 !important;
     }
 

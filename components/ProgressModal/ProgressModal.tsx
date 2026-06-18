@@ -25,14 +25,18 @@ export default function ProgressModal({
     onSuccess,
 }: ProgressModalProps) {
     // Инициализируем массив прогресса нулями
-    const [progressData, setProgressData] = useState<number[]>(
-        initialProgress || exercises.map(() => 0)
-    )
+    const [progressData, setProgressData] = useState<number[]>(() => {
+        if (!initialProgress || initialProgress.length === 0) {
+            return exercises.map(() => 0)
+        }
+        // Дополняем нулями, если initialProgress короче exercises
+        return exercises.map((_, index) => initialProgress[index] || 0)
+    })
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
     const handleInputChange = (index: number, value: string) => {
-        const numValue = parseInt(value) || 0
+        const numValue = value === "" ? 0 : parseInt(value)
         // Валидация: только числа >= 0
         const clampedValue = Math.max(0, Math.min(numValue, 1000))
 
@@ -67,24 +71,28 @@ export default function ProgressModal({
 
                 <div className={styles.scrollContainer}>
                     <div className={styles.exercisesList}>
-                        {exercises.map((exercise, index) => (
-                            <div key={exercise._id} className={styles.exerciseRow}>
-                                <div className={styles.exerciseInfo}>
-                                    <div className={styles.exerciseName}>{exercise.name}</div>
-                                </div>
+                        {exercises.length === 0 ? (
+                            <div className={styles.empty}>Нет упражнений для заполнения</div>
+                        ) : (
+                            exercises.map((exercise, index) => (
+                                <div key={exercise._id} className={styles.exerciseRow}>
+                                    <div className={styles.exerciseInfo}>
+                                        <div className={styles.exerciseName}>{exercise.name}</div>
+                                    </div>
 
-                                <input
-                                    type="number"
-                                    min="0"
-                                    max="1000"
-                                    value={progressData[index]}
-                                    onChange={(e) => handleInputChange(index, e.target.value)}
-                                    className={styles.input}
-                                    disabled={isSubmitting}
-                                    aria-label={`Прогресс для упражнения: ${exercise.name}`}
-                                />
-                            </div>
-                        ))}
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max="1000"
+                                        value={progressData[index]}
+                                        onChange={(e) => handleInputChange(index, e.target.value)}
+                                        className={styles.input}
+                                        disabled={isSubmitting}
+                                        aria-label={`Прогресс для упражнения: ${exercise.name}`}
+                                    />
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
 
