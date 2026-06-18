@@ -5,11 +5,11 @@ import Image from "next/image";
 export default function Logo() {
     return (
         <div className={styles.wrapperLogo}>
-            <Link href="/" className={styles.linkLogo} aria-label="На главную">
+            <Link href="/" className={styles.linkLogo} aria-label="Go to home">
                 <Image
                     className={styles.linkLogo__img}
                     src="/img/logo.png"
-                    alt="Логотип SkyFitnessPro"
+                    alt="SkyFitnessPro Logo"
                     width={29}
                     height={20}
                     priority
