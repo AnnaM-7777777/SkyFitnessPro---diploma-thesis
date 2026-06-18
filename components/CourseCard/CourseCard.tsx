@@ -1,104 +1,319 @@
-import Link from "next/link";
-import Image from "next/image";
-import type { Course } from "@/types/course";
-import styles from "./CourseCard.module.css";
+import Link from "next/link"
+import Image from "next/image"
+import { useState, useEffect } from "react"
+import { useAuth } from "@/context/AuthContext"
+import { apiFetch } from "@/libs/apiConfig"
+import Toast from "@/components/Toast/Toast"
+import type { Course } from "@/types/course"
+import styles from "./CourseCard.module.css"
 
 interface CourseCardProps {
-    course: Course;
+    course: Course
 }
 
-// СЛОВАРЬ: название курса → путь к картинке
+type UserData = {
+    email: string
+    selectedCourses: string[]
+}
+
 const COURSE_IMAGES: Record<string, string> = {
-    Йога: "/img/1-yoga-l.png",
-    Стретчинг: "/img/2-stretching-l.png",
-    Фитнес: "/img/3-fitness-l.png",
-    "Степ-аэробика": "/img/4-aerobics-l.png",
-    Бодифлекс: "/img/5-bodyflex-l.png",
-    Yoga: "/img/1-yoga-l.png",
-    Stretching: "/img/2-stretching-l.png",
-    Fitness: "/img/3-fitness-l.png",
-    Aerobics: "/img/4-aerobics-l.png",
-    Bodyflex: "/img/5-bodyflex-l.png",
-};
+    Йога: "/img/1-yoga.jpg",
+    Стретчинг: "/img/2-stretching.jpg",
+    Фитнес: "/img/3-fitness.jpg",
+    "Степ-аэробика": "/img/4-aerobics.jpg",
+    Бодифлекс: "/img/5-bodyflex.jpg",
+    Yoga: "/img/1-yoga.jpg",
+    Stretching: "/img/2-stretching.jpg",
+    Fitness: "/img/3-fitness.jpg",
+    Aerobics: "/img/4-aerobics.jpg",
+    Bodyflex: "/img/5-bodyflex.jpg",
+}
+
+// Определяем класс для позиционирования фона по названию курса
+const getCourseBgClass = (title: string): string => {
+    const lowerTitle = title.toLowerCase()
+
+    if (lowerTitle.includes("йог") || lowerTitle.includes("yoga")) return styles.bg_yoga
+    if (
+        lowerTitle.includes("стретч") ||
+        lowerTitle.includes("растяж") ||
+        lowerTitle.includes("stretching")
+    )
+        return styles.bg_stretching
+    if (lowerTitle.includes("фитнес") || lowerTitle.includes("fitness")) return styles.bg_fitness
+    if (lowerTitle.includes("аэроб") || lowerTitle.includes("aerob")) return styles.bg_aerobics
+    if (lowerTitle.includes("бодифлекс") || lowerTitle.includes("bodyflex"))
+        return styles.bg_bodyflex
+
+    return styles.bg_yoga
+}
 
 export default function CourseCard({ course }: CourseCardProps) {
-    const title = course.nameRU || course.title || course.name || "Курс";
+    const { user, token } = useAuth()
+    const [isAdded, setIsAdded] = useState(false)
+    const [loading, setLoading] = useState(true)
+    const [toast, setToast] = useState<{
+        message: string
+        type: "error" | "success"
+    } | null>(null)
+    const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 })
+    const [showCustomCursor, setShowCustomCursor] = useState(false)
+
+    const title = course.nameRU || course.title || course.name || "Курс"
 
     const bgImage =
         course.imageBG ||
         course.image ||
         COURSE_IMAGES[title] ||
         COURSE_IMAGES[title.split(" ")[0]] ||
-        "/img/1-yoga-l.png";
+        "/img/1-yoga.jpg"
+
+    const bgClass = getCourseBgClass(title)
+
+    const [hasHover, setHasHover] = useState(false)
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia("(hover: hover) and (pointer: fine)")
+        setHasHover(mediaQuery.matches)
+    }, [])
+
+    useEffect(() => {
+        if (!token) {
+            setIsAdded(false)
+            setLoading(false)
+            return
+        }
+
+        const checkIfAdded = async () => {
+            try {
+                let selectedCourses: string[] = []
+                const cachedData = sessionStorage.getItem("user_data_cache")
+
+                // Пробуем взять из кэша
+                if (cachedData) {
+                    const { data, timestamp } = JSON.parse(cachedData)
+                    if (Date.now() - timestamp < 30000) {
+                        selectedCourses = data
+                    }
+                }
+
+                // Если кэш пустой или устарел — делаем запрос
+                if (selectedCourses.length === 0) {
+                    const response = await apiFetch<{ user: UserData }>("/users/me")
+                    selectedCourses = response.user.selectedCourses || []
+                    sessionStorage.setItem(
+                        "user_data_cache",
+                        JSON.stringify({
+                            data: selectedCourses,
+                            timestamp: Date.now(),
+                        })
+                    )
+                }
+
+                const isCourseAdded = selectedCourses.includes(course._id)
+                setIsAdded(isCourseAdded)
+            } catch (err) {
+                console.error("Ошибка проверки курса:", err)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        checkIfAdded()
+    }, [token, course._id])
+
+    const handleAddCourse = async () => {
+        if (!user) {
+            setToast({
+                message: "Сначала нужно войти, чтобы добавить курс",
+                type: "error",
+            })
+            return
+        }
+
+        try {
+            await apiFetch("/users/me/courses", {
+                method: "POST",
+                body: JSON.stringify({ courseId: course._id }),
+            })
+
+            setIsAdded(true)
+            sessionStorage.removeItem("user_data_cache")
+
+            setToast({
+                message: "Курс успешно добавлен!",
+                type: "success",
+            })
+            setTimeout(() => setToast(null), 2000)
+        } catch (err: unknown) {
+            if (err instanceof Error && err.message.includes("уже был добавлен")) {
+                setIsAdded(true)
+                sessionStorage.removeItem("user_data_cache")
+                return
+            }
+
+            console.error("Ошибка добавления курса:", err)
+            setToast({
+                message: err instanceof Error ? err.message : "Ошибка при добавлении курса",
+                type: "error",
+            })
+            setTimeout(() => setToast(null), 2000)
+        }
+    }
+
+    const handleRemoveCourse = async () => {
+        if (!user) return
+
+        try {
+            await apiFetch(`/users/me/courses/${course._id}`, {
+                method: "DELETE",
+            })
+
+            setIsAdded(false)
+            sessionStorage.removeItem("user_data_cache")
+
+            setToast({
+                message: "Курс удалён из профиля",
+                type: "success",
+            })
+            setTimeout(() => setToast(null), 2000)
+        } catch (err: unknown) {
+            console.error("Ошибка удаления курса:", err)
+            setToast({
+                message: err instanceof Error ? err.message : "Ошибка при удалении курса",
+                type: "error",
+            })
+            setTimeout(() => setToast(null), 2000)
+        }
+    }
+
+    const handleToggleCourse = () => {
+        if (isAdded) {
+            handleRemoveCourse()
+        } else {
+            handleAddCourse()
+        }
+    }
+
+    const handleMouseEnter = () => {
+        if (hasHover) setShowCustomCursor(true)
+    }
+    const handleMouseLeave = () => {
+        if (hasHover) setShowCustomCursor(false)
+    }
+
+    useEffect(() => {
+        if (!hasHover) return
+
+        const handleMouseMove = (e: MouseEvent) => {
+            setCursorPos({
+                x: e.clientX,
+                y: e.clientY,
+            })
+        }
+
+        window.addEventListener("mousemove", handleMouseMove)
+        return () => window.removeEventListener("mousemove", handleMouseMove)
+    }, [hasHover])
 
     return (
-        <article className={styles.cards__course}>
-            <div className={styles.cards__bg}>
-                <Image
-                    src={bgImage}
-                    alt=""
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    style={{ objectFit: "cover" }}
-                    priority
-                />
-                <button
-                    className={styles.cards__btnAddCourse}
-                    aria-label="Добавить курс"
+        <>
+            <article className={styles.cards__course}>
+                <div
+                    className={`${styles.cards__bg} ${bgClass}`}
+                    style={{
+                        backgroundImage: `url("${bgImage}")`,
+                    }}
                 >
-                    <Image
-                        src="/img/btnAddIcon.png"
-                        alt="add"
-                        width={27}
-                        height={27}
-                        priority
-                    />
-                </button>
-            </div>
-
-            <div className={styles.cards__content}>
-                <Link
-                    href={`/courses/${course._id}`}
-                    className={styles.cards__link}
-                >
-                    <h3 className={styles.cards__name}>{title}</h3>
-                </Link>
-
-                <div className={styles.cards__meta}>
-                    <span className={styles.cards__item}>
+                    <button
+                        className={styles.cards__btnAddCourse}
+                        aria-label={isAdded ? "Удалить курс" : "Добавить курс"}
+                        onClick={handleToggleCourse}
+                        disabled={loading || !user}
+                        onMouseEnter={handleMouseEnter}
+                        onMouseLeave={handleMouseLeave}
+                    >
                         <Image
-                            src="/img/calendar.svg"
-                            alt=""
-                            width={16}
-                            height={16}
-                            aria-hidden="true"
+                            src={isAdded ? "/img/btnDelIcon.png" : "/img/btnAddIcon.png"}
+                            alt={isAdded ? "remove" : "add"}
+                            width={27}
+                            height={27}
+                            priority
                         />
-                        {course.durationInDays || 25} дней
-                    </span>
-                    <span className={styles.cards__item}>
-                        <Image
-                            src="/img/time.svg"
-                            alt=""
-                            width={16}
-                            height={16}
-                            aria-hidden="true"
-                        />
-                        {course.dailyDurationInMinutes?.from || 20}-
-                        {course.dailyDurationInMinutes?.to || 50} мин/день
-                    </span>
+                    </button>
                 </div>
 
-                <span className={styles.cards__item}>
+                <div className={styles.cards__content}>
+                    <Link href={`/courses/${course._id}`} className={styles.cards__link}>
+                        <h3 className={styles.cards__name}>{title}</h3>
+                    </Link>
+
+                    <div className={styles.cards__meta}>
+                        <span className={styles.cards__item}>
+                            <Image
+                                src="/img/calendar.svg"
+                                alt=""
+                                width={16}
+                                height={16}
+                                aria-hidden="true"
+                            />
+                            {course.durationInDays || 25} дней
+                        </span>
+                        <span className={styles.cards__item}>
+                            <Image
+                                src="/img/time.svg"
+                                alt=""
+                                width={16}
+                                height={16}
+                                aria-hidden="true"
+                            />
+                            {course.dailyDurationInMinutes?.from || 20}-
+                            {course.dailyDurationInMinutes?.to || 50} мин/день
+                        </span>
+                    </div>
+
+                    <span className={styles.cards__item}>
+                        <Image
+                            src="/img/signal-fill.svg"
+                            alt=""
+                            width={16}
+                            height={16}
+                            aria-hidden="true"
+                        />
+                        Сложность
+                    </span>
+                </div>
+            </article>
+
+            {/* Кастомный курсор */}
+            <div
+                className={`${styles.customCursor} ${showCustomCursor ? styles.customCursor_visible : ""}`}
+                style={{ left: `${cursorPos.x}px`, top: `${cursorPos.y}px` }}
+            >
+                <div className={styles.customCursor__arrow}>
                     <Image
-                        src="/img/signal-fill.svg"
+                        src="/img/customCursor.png"
                         alt=""
-                        width={16}
-                        height={16}
-                        aria-hidden="true"
+                        width={24}
+                        height={24}
+                        priority
+                        style={{ objectFit: "contain" }}
                     />
-                    Сложность
-                </span>
+                </div>
+
+                <div className={styles.customCursor__text}>
+                    {isAdded ? "Удалить курс" : "Добавить курс"}
+                </div>
             </div>
-        </article>
-    );
+
+            {toast && (
+                <Toast
+                    key={toast.message}
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                />
+            )}
+        </>
+    )
 }

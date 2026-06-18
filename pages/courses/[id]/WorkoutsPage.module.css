@@ -1,0 +1,154 @@
+.container {
+    width: 100%;
+    min-height: 100vh;
+    background-color: var(--bg-primary);
+    padding: 0 calc(50% - 600px);
+}
+
+.title {
+    font-weight: 500;
+    font-size: 60px;
+    line-height: 100%;
+    margin-bottom: 40px;
+}
+
+.loading,
+.empty {
+    text-align: center;
+    padding: 60px 20px;
+    font-size: 18px;
+    color: var(--text-grey);
+}
+
+.workoutBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    width: 100%;
+    margin-bottom: 120px;
+    background-color: var(--bg-primary);
+}
+
+.videoWrapper {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    background-color: var(--bg-secondary);
+    border-radius: 30px;
+    overflow: hidden;
+}
+
+.video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.videoPlaceholder {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 18px;
+}
+
+.exercisesBlock {
+    padding: 40px;
+    background-color: var(--bg-secondary);
+    border-radius: 30px;
+    box-shadow: var(--shadow-all);
+}
+
+.exercisesTitle {
+    font-weight: 400;
+    font-size: 32px;
+    line-height: 110%;
+}
+
+.exercisesList {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 60px;
+    margin: 20px 0 0;
+}
+
+.exerciseItem {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.exerciseName {
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 110%;
+}
+
+.exercisesLine {
+    border-top: var(--border-input);
+}
+
+.progressContainer {
+    width: 100%;
+    height: 6px;
+    border-radius: 50px;
+    background-color: var(--bg-line);
+}
+
+.progressBar {
+    height: 100%;
+    background-color: var(--bg-line-progress);
+    border-radius: 50px;
+    transition: width 0.3s ease;
+}
+
+.progressButtonsBlock {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+}
+
+.progressButton,
+.resetButton {
+    width: 320px;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 16px;
+    }
+
+    .title {
+        font-size: 24px;
+        margin-bottom: 24px;
+    }
+
+    .workoutBlock {
+        gap: 24px;
+        margin-bottom: 40px;
+    }
+
+    .exercisesBlock {
+        padding: 30px;
+    }
+
+    .exercisesList {
+        grid-template-columns: repeat(1, 1fr);
+        gap: 24px;
+    }
+
+    .progressButtonsBlock {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .progressButton,
+    .resetButton {
+        width: 100%;
+    }
+}

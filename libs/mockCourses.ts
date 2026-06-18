@@ -1,4 +1,4 @@
-import type { Course } from "@/types/course";
+import type { Course } from "@/types/course"
 
 export const MOCK_COURSES: Course[] = [
     {
@@ -11,7 +11,7 @@ export const MOCK_COURSES: Course[] = [
         directions: ["Гибкость", "Дыхание", "Релакс"],
         fitting: ["Коврик", "Плед"],
         workouts: ["w1", "w2", "w3"],
-        imageBG: "/img/1-yoga-l.png",
+        imageBG: "/img/1-yoga.jpg",
     },
     {
         _id: "2",
@@ -23,7 +23,7 @@ export const MOCK_COURSES: Course[] = [
         directions: ["Восстановление", "Гибкость"],
         fitting: ["Коврик", "Ремень"],
         workouts: ["w4", "w5"],
-        imageBG: "/img/2-stretching-l.png",
+        imageBG: "/img/2-stretching.jpg",
     },
     {
         _id: "3",
@@ -35,7 +35,7 @@ export const MOCK_COURSES: Course[] = [
         directions: ["Сила", "Выносливость"],
         fitting: ["Гантели", "Коврик"],
         workouts: ["w6", "w7", "w8"],
-        imageBG: "/img/3-fitness-l.png",
+        imageBG: "/img/3-fitness.jpg",
     },
     {
         _id: "4",
@@ -47,7 +47,7 @@ export const MOCK_COURSES: Course[] = [
         directions: ["Кардио", "Координация"],
         fitting: ["Степ-платформа"],
         workouts: ["w9", "w10"],
-        imageBG: "/img/4-aerobics-l.png",
+        imageBG: "/img/4-aerobics.jpg",
     },
     {
         _id: "5",
@@ -59,6 +59,6 @@ export const MOCK_COURSES: Course[] = [
         directions: ["Дыхание", "Похудение"],
         fitting: ["Коврик"],
         workouts: ["w11", "w12"],
-        imageBG: "/img/5-bodyflex-l.png",
+        imageBG: "/img/5-bodyflex.jpg",
     },
-];
+]

@@ -1,0 +1,130 @@
+/* Контейнер и общие состояния */
+.loading {
+    text-align: center;
+    padding: 40px;
+    font-size: 18px;
+    color: var(--text-secondary, #666);
+}
+
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.empty__text {
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 120%;
+}
+
+.empty__btn {
+    width: 295px;
+}
+
+.myCourses {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    grid-gap: 40px;
+    margin-top: 40px;
+    padding-bottom: 280px;
+}
+
+/* Блок прогресса */
+.progressBlock {
+    margin: 20px 0 40px;
+}
+
+.progressText {
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 110%;
+}
+
+.progressBar {
+    width: 100%;
+    height: 8px;
+    background-color: var(--bg-line);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.progressFill {
+    height: 100%;
+    background: var(--bg-line-progress);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+/* Кнопка "Начать тренировки" */
+.startButton {
+    width: 100%;
+}
+
+/* Кастомный курсор - скрыт по умолчанию */
+.customCursor {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0;
+    transform: translate(15px, -10px);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    transition: opacity 0.1s;
+}
+
+.customCursor__arrow {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.customCursor__text {
+    background-color: var(--bg-secondary);
+    padding: 6px;
+    border-radius: 5px;
+    border: 0.5px solid rgba(0, 0, 0, 1);
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 110%;
+    color: rgba(32, 32, 32, 1);
+    transform: translateY(25px) translateX(-10px);
+}
+
+/* Мобильные устройства (до 1024px) */
+@media (max-width: 1024px) {
+    /* Блок карточек */
+    .myCourses {
+        gap: 30px;
+    }
+}
+
+
+/* Мобильные устройства (до 768px) — курсор скрыт */
+@media (max-width: 768px) {
+    .customCursor {
+        display: none !important;
+    }
+
+    /* Блок карточек */
+    .myCourses {
+        gap: 24px;
+    }
+}
+
+/* Десктоп (от 769px) — показываем кастомный курсор */
+@media (min-width: 769px) {
+    .customCursor_visible {
+        opacity: 1;
+    }
+}
