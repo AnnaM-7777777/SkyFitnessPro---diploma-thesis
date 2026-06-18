@@ -286,99 +286,55 @@ export default function CoursePage() {
                 )}
 
                 {/* CTA-блок с бегуном */}
-                <section className={styles.ctaWrapper}>
-                    <div className={styles.cta}>
-                        <div className={styles.cta__content}>
-                            <h2 className={styles.cta__title}>Начните путь к новому телу</h2>
+                <section className={styles.cta}>
+                    <div className={styles.cta__content}>
+                        <h2 className={styles.cta__title}>Начните путь к новому телу</h2>
 
-                            <ul className={styles.cta__benefits}>
-                                {(course.benefits?.length
-                                    ? course.benefits
-                                    : [
-                                          "проработка всех групп мышц",
-                                          "тренировка суставов",
-                                          "улучшение циркуляции крови",
-                                          "упражнения заряжают бодростью",
-                                          "помогают противостоять стрессам",
-                                      ]
-                                ).map((benefit, i) => (
-                                    <li key={i}>{benefit}</li>
-                                ))}
-                            </ul>
+                        <ul className={styles.cta__benefits}>
+                            {(course.benefits?.length
+                                ? course.benefits
+                                : [
+                                      "проработка всех групп мышц",
+                                      "тренировка суставов",
+                                      "улучшение циркуляции крови",
+                                      "упражнения заряжают бодростью",
+                                      "помогают противостоять стрессам",
+                                  ]
+                            ).map((benefit, i) => (
+                                <li key={i}>{benefit}</li>
+                            ))}
+                        </ul>
 
-                            {!user ? (
-                                <button
-                                    onClick={handleAddCourse}
-                                    className={`${styles.cta__btn} btn-primary`}
-                                >
-                                    Войдите, чтобы добавить курс
-                                </button>
-                            ) : isAdded ? (
-                                <button disabled className={`${styles.cta__btn} btn-primary`}>
-                                    Курс уже добавлен ✓
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={handleAddCourse}
-                                    className={`${styles.cta__btn} btn-primary`}
-                                >
-                                    Добавить курс
-                                </button>
-                            )}
-                        </div>
-
-                        {/* Блок с бегуном */}
-                        <div className={styles.cta__imagesContainer}>
-                            <Image
-                                src="/img/runner.png"
-                                alt="Бегун"
-                                width={487}
-                                height={543}
-                                priority
-                                className={`${styles.cta__image} ${styles.img1}`}
-                            />
-
-                            <svg
-                                width="629"
-                                height="467"
-                                viewBox="0 0 629 420"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                                className={`${styles.cta__image} ${styles.img2}`}
+                        {!user ? (
+                            <button
+                                onClick={handleAddCourse}
+                                className={`${styles.cta__btn} btn-primary`}
                             >
-                                <path
-                                    d="M499.782 388.796C943.782 -230.705 47.9024 39.5477 24.1395 237.96C18.5256 284.834 82.2022 298.667 177.705 277.697C273.208 256.727 -131.258 411.114 54.5178 439.481"
-                                    stroke="#C6FF00"
-                                    strokeWidth="10.1395"
-                                />
-                            </svg>
-
-                            <svg
-                                width="54"
-                                height="47"
-                                viewBox="0 0 54 47"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                                className={`${styles.cta__image} ${styles.img3}`}
+                                Войдите, чтобы добавить курс
+                            </button>
+                        ) : isAdded ? (
+                            <button disabled className={`${styles.cta__btn} btn-primary`}>
+                                Курс уже добавлен ✓
+                            </button>
+                        ) : (
+                            <button
+                                onClick={handleAddCourse}
+                                className={`${styles.cta__btn} btn-primary`}
                             >
-                                <path
-                                    d="M2.82886 45.271C5.82886 36.771 20.0289 16.371 52.8289 2.771"
-                                    stroke="black"
-                                    strokeWidth="6"
-                                />
-                            </svg>
-                        </div>
+                                Добавить курс
+                            </button>
+                        )}
                     </div>
 
-                    {/* Блок с бегуном для мобилки */}
-                    <div className={styles.cta__imagesContainerMob}>
+                    {/* Блок с бегуном */}
+                    <div className={styles.cta__images}>
                         <Image
                             src="/img/runner.png"
                             alt="Бегун"
-                            width={313}
-                            height={352}
+                            width={487}
+                            height={543}
                             priority
-                            className={`${styles.cta__imageMob} ${styles.img1Mob}`}
+                            className={`${styles.cta__img} ${styles.img1}`}
                         />
 
                         <svg
@@ -387,7 +343,7 @@ export default function CoursePage() {
                             viewBox="0 0 629 420"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
-                            className={`${styles.cta__imageMob} ${styles.img2Mob}`}
+                            className={`${styles.cta__img} ${styles.img2}`}
                         >
                             <path
                                 d="M499.782 388.796C943.782 -230.705 47.9024 39.5477 24.1395 237.96C18.5256 284.834 82.2022 298.667 177.705 277.697C273.208 256.727 -131.258 411.114 54.5178 439.481"
@@ -402,7 +358,7 @@ export default function CoursePage() {
                             viewBox="0 0 54 47"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
-                            className={`${styles.cta__imageMob} ${styles.img3Mob}`}
+                            className={`${styles.cta__img} ${styles.img3}`}
                         >
                             <path
                                 d="M2.82886 45.271C5.82886 36.771 20.0289 16.371 52.8289 2.771"

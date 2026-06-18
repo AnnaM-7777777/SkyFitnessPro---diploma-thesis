@@ -15,12 +15,6 @@
     margin-top: 40px;
 }
 
-/* Блок с бегуном для мобилки */
-.cta__imagesContainerMob,
-.cta__imageMob {
-    display: none;
-}
-
 /* Заголовки разделов */
 .notFound__text,
 .conditions__title,
@@ -134,12 +128,10 @@
 }
 
 /* CTA-блок с бегуном */
-.ctaWrapper {
+.cta {
     position: relative;
     margin-top: 102px;
-}
-
-.cta {
+    padding: 40px;
     width: 100%;
     height: 486px;
     display: flex;
@@ -147,14 +139,13 @@
     justify-content: space-between;
     background-color: var(--bg-secondary);
     border-radius: 30px;
-    position: relative;
     box-shadow: var(--shadow-all);
     box-sizing: border-box;
 }
 
 .cta__content {
+    width: 100%;
     max-width: 437px;
-    margin: 40px;
     position: relative;
     z-index: 2;
 }
@@ -194,19 +185,20 @@
 }
 
 /* Блок с бегуном */
-.cta__imagesContainer {
-    position: relative;
+.cta__images {
+    position: absolute;
     flex-shrink: 0;
     width: 493px;
     height: 100%;
     top: 0;
-    left: 0;
+    right: 0;
     transform-origin: center center;
     transition: transform 0.3s ease;
     clip-path: inset(-100% -100% 0 -100%);
+    z-index: 1;
 }
 
-.cta__image {
+.cta__img {
     position: absolute;
 }
 
@@ -234,23 +226,8 @@
         font-size: 34px;
         margin: 30px 0 0 30px;
     }
-
-    .cta {
-        height: auto;
-    }
-
-    .cta__imagesContainer,
-    .cta__image {
-        display: none;
-    }
-
-    .cta__content {
-        max-width: 100%;
-        position: static;
-    }
 }
 
-/* Адаптивность */
 @media (max-width: 768px) {
     /* Страница курса */
     .page {
@@ -330,22 +307,20 @@
     }
 
     /* CTA-блок с бегуном */
-    .ctaWrapper {
-        position: relative;
-        margin-top: 156px;
-    }
-
     .cta {
-        margin-top: 0;
-        position: relative;
-        z-index: 10;
+        margin-top: 156px;
+        height: auto;
+        padding: 0;
+        box-shadow: none;
+        background-color: rgba(255, 255, 255, 0);
     }
 
     .cta__content {
-        position: relative;
-        margin: 30px;
-        width: 100%;
-        z-index: 10;
+        padding: 30px;
+        max-width: 100%;
+        background-color: var(--bg-secondary);
+        border-radius: 30px;
+        box-shadow: var(--shadow-all);
     }
 
     .cta__title {
@@ -369,40 +344,30 @@
     }
 
     /* Блок с бегуном для мобилки */
-    .cta__imagesContainerMob {
-        display: block;
-        position: absolute;
+    .cta__images {
         top: -260px;
         right: -5px;
         width: 300px;
         height: 400px;
-        z-index: 1;
     }
 
-    .cta__imageMob {
-        display: block;
-        position: absolute;
-        z-index: 3;
-    }
-
-    .img1Mob {
+    .img1 {
         top: 0;
         left: 50px;
-        z-index: 2;
+        width: 313px;
+        height: 352px;
     }
 
-    .img2Mob {
+    .img2 {
         top: 115px;
         left: -60px;
-        z-index: 1;
         width: 375px;
         height: 290px;
     }
 
-    .img3Mob {
+    .img3 {
         top: 80px;
         left: 110px;
-        z-index: 1;
         width: 37px;
         height: 32px;
     }
