@@ -8,7 +8,7 @@ export default function Logo() {
             <Link href="/" className={styles.linkLogo} aria-label="На главную">
                 <Image
                     className={styles.linkLogo__img}
-                    src="/img/Logo.png"
+                    src="/img/logo.png"
                     alt="Логотип SkyFitnessPro"
                     width={29}
                     height={20}
