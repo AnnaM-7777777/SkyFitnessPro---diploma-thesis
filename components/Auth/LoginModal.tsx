@@ -8,7 +8,7 @@ import styles from "./StyleModal.module.css"
 // Проверка формата email
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-type LoginModalProps = {
+interface LoginModalProps {
     onClose: () => void
 }
 
@@ -105,6 +105,7 @@ export default function LoginModal({ onClose }: LoginModalProps) {
                             }}
                             className={`${styles.input} ${fieldErrors.email ? styles.inputError : ""}`}
                         />
+
                         <input
                             type="password"
                             placeholder="Пароль"
@@ -123,11 +124,12 @@ export default function LoginModal({ onClose }: LoginModalProps) {
 
                         <button
                             type="submit"
-                            className={`${styles.btnAuth} btn-primary`}
+                            className={`${styles.btnAuth} ${styles.btnAuthTop} btn-primary`}
                             disabled={isLoading}
                         >
                             {isLoading ? "Вход..." : "Войти"}
                         </button>
+
                         <Link
                             href="/?modal=register"
                             className={`${styles.btnAuth} btn-secondary`}

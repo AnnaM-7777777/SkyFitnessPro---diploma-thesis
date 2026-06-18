@@ -7,7 +7,7 @@ import styles from "./StyleModal.module.css"
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-type RegisterModalProps = {
+interface RegisterModalProps {
     onClose: () => void
 }
 
@@ -123,6 +123,7 @@ export default function RegisterModal({ onClose }: RegisterModalProps) {
                             }}
                             className={`${styles.input} ${fieldErrors.email ? styles.inputError : ""}`}
                         />
+                        
                         <input
                             type="password"
                             placeholder="Пароль"
@@ -136,6 +137,7 @@ export default function RegisterModal({ onClose }: RegisterModalProps) {
                             }}
                             className={`${styles.input} ${fieldErrors.password ? styles.inputError : ""}`}
                         />
+
                         <input
                             type="password"
                             placeholder="Повторите пароль"
@@ -150,13 +152,15 @@ export default function RegisterModal({ onClose }: RegisterModalProps) {
                             className={`${styles.input} ${fieldErrors.confirmPassword ? styles.inputError : ""}`}
                         />
                         {error && <div className={styles.error}>{error}</div>}
+
                         <button
                             type="submit"
-                            className={`${styles.btnAuth} btn-primary`}
+                            className={`${styles.btnAuth} ${styles.btnAuthTop} btn-primary`}
                             disabled={isLoading}
                         >
                             {isLoading ? "Регистрация..." : "Зарегистрироваться"}
                         </button>
+
                         <Link
                             href="/?modal=login"
                             className={`${styles.btnAuth} btn-secondary`}

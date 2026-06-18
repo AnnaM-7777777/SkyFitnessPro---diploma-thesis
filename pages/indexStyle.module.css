@@ -14,29 +14,33 @@
     font-weight: 500;
     font-size: 60px;
     line-height: 100%;
-    width: 840px;
 }
 
 .text__sloganWrapper {
     position: relative;
-    width: 288px;
+    min-width: 320px;
+    display: flex;
+    justify-content: flex-end;
 }
 
-.text__slogan {
+.text__sloganBlock {
     background-color: var(--bg-block);
     border-radius: 5px;
     padding: 16px 20px;
+    width: 288px;
+    height: 102px;
 }
 
 .text__sloganTitle {
     font-weight: 400;
     font-size: 32px;
+    line-height: 35px;
 }
 
 .text__sloganImg {
     position: absolute;
-    right: 142px;
-    top: 103px;
+    right: 147px;
+    top: 88px;
     z-index: 1;
 }
 
@@ -55,4 +59,41 @@
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+/* Мобильные устройства (до 1024px) */
+@media (max-width: 1024px) {
+    /* Блок карточек */
+    .container__cards {
+        gap: 30px;
+    }
+
+    .text__title {
+        font-size: 42px;
+    }
+}
+
+/* Мобильные устройства (до 768px) */
+@media (max-width: 768px) {
+    .homePage {
+        padding: 0 16px 128px;
+    }
+
+    .container__text {
+        width: 100%;
+        margin-bottom: 34px;
+    }
+
+    .text__title {
+        font-size: 32px;
+    }
+
+    .text__sloganWrapper {
+        display: none;
+    }
+
+    /* Блок карточек */
+    .container__cards {
+        gap: 24px;
+    }
 }

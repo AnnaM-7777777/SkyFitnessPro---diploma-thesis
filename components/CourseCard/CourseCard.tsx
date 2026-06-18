@@ -1,7 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect } from "react"
-import { useRouter } from "next/router"
 import { useAuth } from "@/context/AuthContext"
 import { apiFetch } from "@/libs/apiConfig"
 import Toast from "@/components/Toast/Toast"
@@ -12,27 +11,44 @@ interface CourseCardProps {
     course: Course
 }
 
-// Тип теперь описывает вложенность, как возвращает сервер
 type UserData = {
     email: string
     selectedCourses: string[]
 }
 
 const COURSE_IMAGES: Record<string, string> = {
-    Йога: "/img/1-yoga-l.png",
-    Стретчинг: "/img/2-stretching-l.png",
-    Фитнес: "/img/3-fitness-l.png",
-    "Степ-аэробика": "/img/4-aerobics-l.png",
-    Бодифлекс: "/img/5-bodyflex-l.png",
-    Yoga: "/img/1-yoga-l.png",
-    Stretching: "/img/2-stretching-l.png",
-    Fitness: "/img/3-fitness-l.png",
-    Aerobics: "/img/4-aerobics-l.png",
-    Bodyflex: "/img/5-bodyflex-l.png",
+    Йога: "/img/1-yoga.jpg",
+    Стретчинг: "/img/2-stretching.jpg",
+    Фитнес: "/img/3-fitness.jpg",
+    "Степ-аэробика": "/img/4-aerobics.jpg",
+    Бодифлекс: "/img/5-bodyflex.jpg",
+    Yoga: "/img/1-yoga.jpg",
+    Stretching: "/img/2-stretching.jpg",
+    Fitness: "/img/3-fitness.jpg",
+    Aerobics: "/img/4-aerobics.jpg",
+    Bodyflex: "/img/5-bodyflex.jpg",
+}
+
+// Определяем класс для позиционирования фона по названию курса
+const getCourseBgClass = (title: string): string => {
+    const lowerTitle = title.toLowerCase()
+
+    if (lowerTitle.includes("йог") || lowerTitle.includes("yoga")) return styles.bg_yoga
+    if (
+        lowerTitle.includes("стретч") ||
+        lowerTitle.includes("растяж") ||
+        lowerTitle.includes("stretching")
+    )
+        return styles.bg_stretching
+    if (lowerTitle.includes("фитнес") || lowerTitle.includes("fitness")) return styles.bg_fitness
+    if (lowerTitle.includes("аэроб") || lowerTitle.includes("aerob")) return styles.bg_aerobics
+    if (lowerTitle.includes("бодифлекс") || lowerTitle.includes("bodyflex"))
+        return styles.bg_bodyflex
+
+    return styles.bg_yoga
 }
 
 export default function CourseCard({ course }: CourseCardProps) {
-    const router = useRouter()
     const { user, token } = useAuth()
     const [isAdded, setIsAdded] = useState(false)
     const [loading, setLoading] = useState(true)
@@ -50,9 +66,17 @@ export default function CourseCard({ course }: CourseCardProps) {
         course.image ||
         COURSE_IMAGES[title] ||
         COURSE_IMAGES[title.split(" ")[0]] ||
-        "/img/1-yoga-l.png"
+        "/img/1-yoga.jpg"
 
-    // Правильно читаем вложенный объект user
+    const bgClass = getCourseBgClass(title)
+
+    const [hasHover, setHasHover] = useState(false)
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia("(hover: hover) and (pointer: fine)")
+        setHasHover(mediaQuery.matches)
+    }, [])
+
     useEffect(() => {
         if (!token) {
             setIsAdded(false)
@@ -62,25 +86,19 @@ export default function CourseCard({ course }: CourseCardProps) {
 
         const checkIfAdded = async () => {
             try {
-                const cachedData = sessionStorage.getItem("user_data_cache")
                 let selectedCourses: string[] = []
+                const cachedData = sessionStorage.getItem("user_data_cache")
 
+                // Пробуем взять из кэша
                 if (cachedData) {
                     const { data, timestamp } = JSON.parse(cachedData)
                     if (Date.now() - timestamp < 30000) {
                         selectedCourses = data
-                    } else {
-                        const response = await apiFetch<{ user: UserData }>("/users/me")
-                        selectedCourses = response.user.selectedCourses || []
-                        sessionStorage.setItem(
-                            "user_data_cache",
-                            JSON.stringify({
-                                data: selectedCourses,
-                                timestamp: Date.now(),
-                            })
-                        )
                     }
-                } else {
+                }
+
+                // Если кэш пустой или устарел — делаем запрос
+                if (selectedCourses.length === 0) {
                     const response = await apiFetch<{ user: UserData }>("/users/me")
                     selectedCourses = response.user.selectedCourses || []
                     sessionStorage.setItem(
@@ -93,7 +111,7 @@ export default function CourseCard({ course }: CourseCardProps) {
                 }
 
                 const isCourseAdded = selectedCourses.includes(course._id)
-                setIsAdded(isCourseAdded || false)
+                setIsAdded(isCourseAdded)
             } catch (err) {
                 console.error("Ошибка проверки курса:", err)
             } finally {
@@ -104,7 +122,6 @@ export default function CourseCard({ course }: CourseCardProps) {
         checkIfAdded()
     }, [token, course._id])
 
-    // Добавление курса
     const handleAddCourse = async () => {
         if (!user) {
             setToast({
@@ -120,9 +137,8 @@ export default function CourseCard({ course }: CourseCardProps) {
                 body: JSON.stringify({ courseId: course._id }),
             })
 
-            setIsAdded(true) // Мгновенно меняем кнопку на "-"
-
-            sessionStorage.removeItem("user_data_cache") // Очищаем кэш
+            setIsAdded(true)
+            sessionStorage.removeItem("user_data_cache")
 
             setToast({
                 message: "Курс успешно добавлен!",
@@ -132,9 +148,7 @@ export default function CourseCard({ course }: CourseCardProps) {
         } catch (err: unknown) {
             if (err instanceof Error && err.message.includes("уже был добавлен")) {
                 setIsAdded(true)
-
-                sessionStorage.removeItem("user_data_cache") // Очищаем кэш
-
+                sessionStorage.removeItem("user_data_cache")
                 return
             }
 
@@ -147,7 +161,6 @@ export default function CourseCard({ course }: CourseCardProps) {
         }
     }
 
-    // Удаление курса
     const handleRemoveCourse = async () => {
         if (!user) return
 
@@ -156,8 +169,7 @@ export default function CourseCard({ course }: CourseCardProps) {
                 method: "DELETE",
             })
 
-            setIsAdded(false) // Мгновенно меняем кнопку на "+"
-
+            setIsAdded(false)
             sessionStorage.removeItem("user_data_cache")
 
             setToast({
@@ -175,7 +187,6 @@ export default function CourseCard({ course }: CourseCardProps) {
         }
     }
 
-    // Обработчик клика — переключение
     const handleToggleCourse = () => {
         if (isAdded) {
             handleRemoveCourse()
@@ -184,10 +195,16 @@ export default function CourseCard({ course }: CourseCardProps) {
         }
     }
 
-    const handleMouseEnter = () => setShowCustomCursor(true)
-    const handleMouseLeave = () => setShowCustomCursor(false)
+    const handleMouseEnter = () => {
+        if (hasHover) setShowCustomCursor(true)
+    }
+    const handleMouseLeave = () => {
+        if (hasHover) setShowCustomCursor(false)
+    }
 
     useEffect(() => {
+        if (!hasHover) return
+
         const handleMouseMove = (e: MouseEvent) => {
             setCursorPos({
                 x: e.clientX,
@@ -197,21 +214,17 @@ export default function CourseCard({ course }: CourseCardProps) {
 
         window.addEventListener("mousemove", handleMouseMove)
         return () => window.removeEventListener("mousemove", handleMouseMove)
-    }, [])
+    }, [hasHover])
 
     return (
         <>
             <article className={styles.cards__course}>
-                <div className={styles.cards__bg}>
-                    <Image
-                        src={bgImage}
-                        alt=""
-                        fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        style={{ objectFit: "cover" }}
-                        priority
-                    />
-
+                <div
+                    className={`${styles.cards__bg} ${bgClass}`}
+                    style={{
+                        backgroundImage: `url("${bgImage}")`,
+                    }}
+                >
                     <button
                         className={styles.cards__btnAddCourse}
                         aria-label={isAdded ? "Удалить курс" : "Добавить курс"}
@@ -293,7 +306,6 @@ export default function CourseCard({ course }: CourseCardProps) {
                 </div>
             </div>
 
-            {/* Toast-уведомление */}
             {toast && (
                 <Toast
                     key={toast.message}

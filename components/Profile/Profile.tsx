@@ -38,9 +38,11 @@ export default function Profile() {
         }
     }
 
+    const DEFAULT_AVATAR_DOMAINS = ["yandexcloud", "skypro"]
+
     const getAvatarUrl = (imageUrl?: string): string => {
         if (!imageUrl) return "/img/avatar.png"
-        if (imageUrl.includes("yandexcloud") || imageUrl.includes("skypro")) {
+        if (DEFAULT_AVATAR_DOMAINS.some((domain) => imageUrl.includes(domain))) {
             return "/img/avatar.png"
         }
         return imageUrl

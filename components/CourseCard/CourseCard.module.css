@@ -15,14 +15,43 @@
     border-radius: 0 0 30px 30px;
     overflow: hidden;
     background-color: var(--btn-secondary);
-    text-align: right;
-    padding-top: 27px;
-    padding-right: 27px;
     position: relative;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+/* Индивидуальное позиционирование фона для каждого курса */
+.bg_yoga {
+    background-size: auto 170%;
+    background-position: center -115px;
+}
+
+.bg_stretching {
+    background-size: auto 175%;
+    background-position: center -15px;
+    background-color: rgba(36, 145, 210, 1);
+}
+
+.bg_fitness {
+    background-size: auto 240%;
+    background-position: center -35px;
+}
+
+.bg_aerobics {
+    background-size: auto 320%;
+    background-position: -240px -680px;
+    background-color: rgba(255, 126, 101, 1);
+}
+
+.bg_bodyflex {
+    background-size: auto 160%;
+    background-position: center -165px;
 }
 
 .cards__btnAddCourse {
-    position: relative;
+    position: absolute;
+    top: 27px;
+    right: 27px;
     z-index: 2;
     background: none;
     border: none;
@@ -78,10 +107,6 @@
     transition: opacity 0.1s;
 }
 
-.customCursor_visible {
-    opacity: 1;
-}
-
 .customCursor__arrow {
     width: 24px;
     height: 24px;
@@ -103,7 +128,29 @@
     transform: translateY(25px) translateX(-10px);
 }
 
-/* Скрываем стандартный курсор при наведении на кнопку */
-.cards__btnAddCourse:hover {
-    cursor: none !important;
+/* Мобильные устройства (до 768px) */
+@media (max-width: 768px) {
+    .cards__name {
+        font-size: 24px;
+    }
+
+    /* На мобильных курсор ВСЕГДА скрыт */
+    .customCursor {
+        display: none !important;
+    }
+
+    .cards__btnAddCourse:hover {
+        cursor: pointer;
+    }
+}
+
+/* Десктоп (от 769px) — показываем кастомный курсор */
+@media (min-width: 769px) {
+    .customCursor_visible {
+        opacity: 1;
+    }
+
+    .cards__btnAddCourse:hover {
+        cursor: none !important;
+    }
 }

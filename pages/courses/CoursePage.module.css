@@ -1,16 +1,3 @@
-.page {
-    min-height: 100vh;
-    background-color: var(--bg-primary);
-    padding: 0 calc(50% - 600px) 128px;
-}
-
-.title,
-.notFound__text {
-    font-weight: 600;
-    font-size: 40px;
-    line-height: 110%;
-}
-
 /* Загрузка / не найдено */
 .loading,
 .notFound {
@@ -26,6 +13,23 @@
 .notFound__btn {
     width: 150px;
     margin-top: 40px;
+}
+
+/* Заголовки разделов */
+.notFound__text,
+.conditions__title,
+.directions__title {
+    font-weight: 600;
+    font-size: 40px;
+    line-height: 110%;
+    margin: 60px 0 40px;
+}
+
+/* Страница курса */
+.page {
+    min-height: 100vh;
+    background-color: var(--bg-primary);
+    padding: 0 calc(50% - 600px) 128px;
 }
 
 /* Шапка курса — с динамическим фоном и картинкой */
@@ -44,12 +48,13 @@
     line-height: 110%;
     color: var(--text-secondary);
     margin: 40px 0 0 40px;
+    flex: 1;
 }
 
 .header__image {
-    flex: 1;
     height: 100%;
-    min-width: 300px;
+    width: 100%;
+    max-width: 545px;
 }
 
 /* Описание курса */
@@ -58,33 +63,32 @@
     box-shadow: var(--shadow-all);
     border-radius: 30px;
     padding: 40px;
-    margin: 60px 0;
+    margin-top: 60px;
 }
 
-.description__title {
-    font-weight: 700;
-}
-
-.description__text {
+.description__info {
     font-weight: 400;
     font-size: 24px;
     line-height: 110%;
 }
 
-/* Условия - блок "Подойдет для вас, если" */
+.description__boldedTerm {
+    font-weight: 700;
+}
+
+/* Блок "Подойдет для вас, если" */
 .conditions__block {
     display: flex;
     gap: 17px;
-    margin: 40px 0 60px;
 }
 
 .condition {
-    background: linear-gradient(115.81deg, #151720 34.98%, #1e212e 91.5%);
-    border-radius: 28px;
-    padding: 20px;
     display: flex;
     gap: 25px;
     align-items: center;
+    background: linear-gradient(115.81deg, #151720 34.98%, #1e212e 91.5%);
+    border-radius: 28px;
+    padding: 20px;
 }
 
 .condition__number {
@@ -108,17 +112,15 @@
     gap: 34px;
     background-color: var(--btn-primary);
     padding: 30px;
-    margin-top: 40px;
     border-radius: 28px;
 }
 
 .direction {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     gap: 11px;
 }
 
-.direction__span,
 .direction__text {
     font-weight: 400;
     font-size: 24px;
@@ -127,20 +129,25 @@
 
 /* CTA-блок с бегуном */
 .cta {
+    position: relative;
+    margin-top: 102px;
+    padding: 40px;
+    width: 100%;
     height: 486px;
-    margin: 102px 0 0;
     display: flex;
     align-items: center;
-    gap: 40px;
+    justify-content: space-between;
     background-color: var(--bg-secondary);
     border-radius: 30px;
-    position: relative;
     box-shadow: var(--shadow-all);
+    box-sizing: border-box;
 }
 
 .cta__content {
-    max-width: 427px;
-    margin: 40px 0 40px 40px;
+    width: 100%;
+    max-width: 437px;
+    position: relative;
+    z-index: 2;
 }
 
 .cta__title {
@@ -149,12 +156,12 @@
     line-height: 100%;
 }
 
-.benefits {
+.cta__benefits {
     padding: 0;
     margin: 28px 0;
 }
 
-.benefits li {
+.cta__benefits li {
     font-weight: 400;
     font-size: 24px;
     line-height: 148%;
@@ -163,7 +170,7 @@
     position: relative;
 }
 
-.benefits li::before {
+.cta__benefits li::before {
     content: "•";
     position: absolute;
     left: 14px;
@@ -173,39 +180,194 @@
 
 /* Кнопки */
 .cta__btn {
-    width: 100%;
+    width: 437px;
     transition: all 0.2s;
 }
 
-.cta__image {
+/* Блок с бегуном */
+.cta__images {
+    position: absolute;
+    flex-shrink: 0;
+    width: 493px;
+    height: 100%;
+    top: 0;
+    right: 0;
+    transform-origin: center center;
+    transition: transform 0.3s ease;
+    clip-path: inset(-100% -100% 0 -100%);
+    z-index: 1;
+}
+
+.cta__img {
     position: absolute;
 }
 
-/* Блок с бегуном */
-.cta__imagesContainer {
-    position: relative;
-    flex: 1;
-    height: 100%;
-    min-width: 200px;
-}
-
 .img1 {
-    z-index: 10;
-    top: -100px;
-    left: 100px;
-    rotate: -2.99deg;
+    z-index: 2;
+    top: -86px;
+    left: -10px;
 }
 
 .img2 {
-    z-index: 2;
-    top: -87px;
-    left: 172px;
+    z-index: 1;
+    top: 90px;
+    left: -150px;
 }
 
-/* Адаптивность */
+.img3 {
+    z-index: 1;
+    top: 35px;
+    left: 75px;
+}
+
+@media (max-width: 1024px) {
+    .header__title {
+        font-weight: 500;
+        font-size: 34px;
+        margin: 30px 0 0 30px;
+    }
+}
+
 @media (max-width: 768px) {
+    /* Страница курса */
+    .page {
+        padding: 0 16px 128px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Заголовки разделов */
+    .notFound__text,
+    .conditions__title,
+    .directions__title {
+        font-weight: 500;
+        font-size: 24px;
+        margin: 40px 0 24px;
+    }
+
+    /* Страница курса */
     .header {
         flex-direction: column;
         text-align: center;
+        height: 389px;
+    }
+
+    .header__content {
+        display: none;
+    }
+
+    /* Мобильные настройки фона для каждого курса */
+    .header__image {
+        max-width: 100%;
+    }
+    .header__image_yoga {
+        background-size: auto 145% !important;
+        background-position: center -60px !important;
+    }
+
+    .header__image_stretching {
+        background-size: auto 100% !important;
+        background-position: center 0 !important;
+    }
+
+    .header__image_fitness {
+        background-size: auto 100% !important;
+        background-position: center 0 !important;
+    }
+
+    .header__image_aerobics {
+        background-size: auto 110% !important;
+        background-position: center -20px !important;
+    }
+
+    .header__image_bodyflex {
+        background-size: auto 120% !important;
+        background-position: center -40px !important;
+    }
+
+    /* Описание курса */
+    .description {
+        display: none;
+    }
+
+    /* Блок "Подойдет для вас, если" */
+    .conditions__block {
+        flex-direction: column;
+    }
+
+    /* Направления */
+    .directions__block {
+        grid-template-columns: repeat(1, 1fr);
+        gap: 24px;
+    }
+
+    .direction__text {
+        font-size: 18px;
+    }
+
+    /* CTA-блок с бегуном */
+    .cta {
+        margin-top: 156px;
+        height: auto;
+        padding: 0;
+        box-shadow: none;
+        background-color: rgba(255, 255, 255, 0);
+    }
+
+    .cta__content {
+        padding: 30px;
+        max-width: 100%;
+        background-color: var(--bg-secondary);
+        border-radius: 30px;
+        box-shadow: var(--shadow-all);
+    }
+
+    .cta__title {
+        font-size: 32px;
+    }
+
+    .cta__benefits li {
+        font-size: 18px;
+        line-height: 158%;
+        padding-left: 28px;
+    }
+
+    .cta__benefits li::before {
+        left: 7px;
+        font-size: 18px;
+    }
+
+    /* Кнопки */
+    .cta__btn {
+        width: 100%;
+    }
+
+    /* Блок с бегуном для мобилки */
+    .cta__images {
+        top: -260px;
+        right: -5px;
+        width: 300px;
+        height: 400px;
+    }
+
+    .img1 {
+        top: 0;
+        left: 50px;
+        width: 313px;
+        height: 352px;
+    }
+
+    .img2 {
+        top: 115px;
+        left: -60px;
+        width: 375px;
+        height: 290px;
+    }
+
+    .img3 {
+        top: 80px;
+        left: 110px;
+        width: 37px;
+        height: 32px;
     }
 }

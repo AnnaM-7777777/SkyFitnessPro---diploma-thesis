@@ -64,8 +64,8 @@ export default function Modal({
                 {type !== "confirm" && (
                     <div className={styles.successModal}>
                         <h2 className={styles.successModal__title}>{title}</h2>
-
-                        <Image src={currentIcon} alt="success" width={57} height={57} priority />
+                        
+                        <Image src={currentIcon} alt={type} width={57} height={57} priority />
                     </div>
                 )}
 

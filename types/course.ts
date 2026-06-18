@@ -13,7 +13,6 @@ export interface Course {
     imageBG?: string
     image?: string
     durationInDays?: number
-    /* dailyDurationInMinutes?: DailyDuration; */
     dailyDurationInMinutes?: {
         from: number
         to: number
