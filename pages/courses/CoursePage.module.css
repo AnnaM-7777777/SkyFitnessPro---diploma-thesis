@@ -134,10 +134,14 @@
 }
 
 /* CTA-блок с бегуном */
+.ctaWrapper {
+    position: relative;
+    margin-top: 102px;
+}
+
 .cta {
     width: 100%;
     height: 486px;
-    margin-top: 102px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -326,8 +330,13 @@
     }
 
     /* CTA-блок с бегуном */
-    .cta {
+    .ctaWrapper {
+        position: relative;
         margin-top: 156px;
+    }
+
+    .cta {
+        margin-top: 0;
         position: relative;
         z-index: 10;
     }
@@ -363,8 +372,8 @@
     .cta__imagesContainerMob {
         display: block;
         position: absolute;
-        top: 1090px;
-        right: 9px;
+        top: -260px;
+        right: -5px;
         width: 300px;
         height: 400px;
         z-index: 1;
