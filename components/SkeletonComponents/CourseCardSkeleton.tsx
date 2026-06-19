@@ -13,13 +13,17 @@ export default function CourseCardSkeleton({
     showButtons = true,
 }: CourseCardSkeletonProps) {
     if (count > 1) {
-        return Array.from({ length: count }).map((_, index) => (
-            <CourseCardSkeletonItem
-                key={index}
-                showProgress={showProgress}
-                showButtons={showButtons}
-            />
-        ))
+        return (
+            <>
+                {Array.from({ length: count }).map((_, index) => (
+                    <CourseCardSkeletonItem
+                        key={index}
+                        showProgress={showProgress}
+                        showButtons={showButtons}
+                    />
+                ))}
+            </>
+        )
     }
 
     return <CourseCardSkeletonItem showProgress={showProgress} showButtons={showButtons} />
@@ -56,7 +60,7 @@ function CourseCardSkeletonItem({
 
             <Skeleton width="40%" height="38px" borderRadius="50px" />
 
-            {/* Прогресс-бар — заменили Fragment на div */}
+            {/* Прогресс-бар */}
             {showProgress && (
                 <div>
                     <Skeleton
