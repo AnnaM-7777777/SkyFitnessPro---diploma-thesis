@@ -10,6 +10,7 @@ import { MOCK_COURSES } from "@/libs/mockCourses"
 import LoginModal from "../components/Auth/LoginModal"
 import RegisterModal from "../components/Auth/RegisterModal"
 import Toast from "@/components/Toast/Toast"
+import CourseCardSkeleton from "@/components/SkeletonComponents/CourseCardSkeleton"
 
 export default function HomePage() {
     const [courses, setCourses] = useState<Course[]>([])
@@ -83,7 +84,7 @@ export default function HomePage() {
 
                 <section className={styles.container__cards}>
                     {loading ? (
-                        <p className={styles.loadingText}>Загрузка курсов...</p>
+                        <CourseCardSkeleton count={6} showProgress={false} showButtons={false} />
                     ) : courses.length > 0 ? (
                         courses.map((course) => (
                             <CourseCard key={course._id || course.id} course={course} />

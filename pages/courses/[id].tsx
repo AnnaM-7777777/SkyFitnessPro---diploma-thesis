@@ -9,6 +9,7 @@ import styles from "./CoursePage.module.css"
 import Image from "next/image"
 import Link from "next/link"
 import Toast from "@/components/Toast/Toast"
+import CoursePageSkeleton from "@/components/SkeletonComponents/CoursePageSkeleton"
 
 type UserData = {
     email: string
@@ -165,15 +166,13 @@ export default function CoursePage() {
         }
     }
 
-    if (loading) {
-        return (
-            <Layout showTitle={true} showScrollToTop={true}>
-                <div className={styles.loading}>
-                    <p>Загрузка курса...</p>
-                </div>
-            </Layout>
-        )
-    }
+   if (loading) {
+    return (
+        <Layout showTitle={true} showScrollToTop={true}>
+            <CoursePageSkeleton />
+        </Layout>
+    )
+}
 
     if (!course) {
         return (

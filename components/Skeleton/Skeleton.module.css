@@ -1,0 +1,19 @@
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--bg-line) 0%,
+        #ebebeb 50%,
+        var(--bg-line) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 2s ease-in-out infinite;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}

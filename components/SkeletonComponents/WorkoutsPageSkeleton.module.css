@@ -1,0 +1,55 @@
+/* Обёртка */
+.workoutsSkeleton {
+    width: 100%;
+    padding: 0 calc(50% - 600px);
+}
+
+/* Блок тренировки */
+.workoutsSkeleton__workoutBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    margin: 40px 0 160px;
+}
+
+/* Блок упражнений */
+.workoutsSkeleton__exercisesBlock {
+    display: flex;
+    flex-direction: column;
+    padding: 40px;
+    background-color: var(--bg-secondary);
+    border-radius: 30px;
+}
+
+/* Список упражнений */
+.workoutsSkeleton__exercisesList {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    row-gap: 20px;
+    column-gap: 60px;
+    margin: 20px 0 40px;
+}
+
+/* Элемент упражнения */
+.workoutsSkeleton__progress {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Мобильные устройства (до 768px) */
+@media (max-width: 768px) {
+    .workoutsSkeleton {
+        padding: 0 16px;
+    }
+
+    /* Список упражнений */
+    .workoutsSkeleton__exercisesList {
+        grid-template-columns: repeat(1, 1fr);
+        row-gap: 24px;
+    }
+
+    .workoutsSkeleton__btn {
+        width: 100% !important;
+    }
+}

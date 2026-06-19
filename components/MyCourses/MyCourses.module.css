@@ -1,11 +1,4 @@
 /* Контейнер и общие состояния */
-.loading {
-    text-align: center;
-    padding: 40px;
-    font-size: 18px;
-    color: var(--text-secondary, #666);
-}
-
 .empty {
     display: flex;
     flex-direction: column;
@@ -108,7 +101,6 @@
         gap: 30px;
     }
 }
-
 
 /* Мобильные устройства (до 768px) — курсор скрыт */
 @media (max-width: 768px) {
