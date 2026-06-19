@@ -7,14 +7,16 @@ import type { Course } from "@/types/course"
 
 // 1. Мок для next/link
 jest.mock("next/link", () => {
-    return ({ children, href }: { children: React.ReactNode; href: string }) => (
+    const MockLink = ({ children, href }: { children: React.ReactNode; href: string }) => (
         <a href={href}>{children}</a>
     )
+    MockLink.displayName = "MockLink"
+    return MockLink
 })
 
 // 2. Мок для next/image
 jest.mock("next/image", () => {
-    return ({
+    const MockImage = ({
         src,
         alt,
         width,
@@ -24,7 +26,12 @@ jest.mock("next/image", () => {
         alt: string
         width: number
         height: number
-    }) => <img src={src} alt={alt} width={width} height={height} />
+    }) => (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={src} alt={alt} width={width} height={height} />
+    )
+    MockImage.displayName = "MockImage"
+    return MockImage
 })
 
 // 3. Мок для useAuth
