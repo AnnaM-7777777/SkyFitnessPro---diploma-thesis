@@ -80,59 +80,105 @@
 
 ```text
 SkyFitnessPro---diploma-thesis/
-├── .eslintrc.json          # Настройки линтера
-├── .gitignore              # Игнорируемые файлы Git
-├── global.d.ts             # Глобальные типы TypeScript
-├── globals.css             # Глобальные стили и CSS-переменные
-├── middleware.ts           # Next.js Middleware (защита маршрутов)
-├── next.config.js          # Конфигурация Next.js
-├── package.json            # Зависимости и скрипты
-├── README.md               # Документация проекта
-├── tsconfig.json           # Конфигурация TypeScript
 │
-├── components/             # Переиспользуемые UI-компоненты
-│   ├── Auth/               # Модалки входа и регистрации
-│   ├── CourseCard/         # Карточка курса (с кастомным курсором)
-│   ├── Header/             # Шапка с меню профиля
-│   ├── Layout/             # Layout-обёртка страниц (Header + контент)
-│   ├── Logo/               # Логотип приложения
-│   ├── ModalUniversalNotifications/ # Универсальные модальные окна
-│   ├── MyCourses/          # Список курсов в профиле
-│   ├── Profile/            # Информация о пользоватéле
-│   ├── ProgressModal/      # Модалка заполнения прогресса
-│   ├── ScrollToTop/        # Кнопка "Наверх"
-│   ├── Toast/              # Всплывающие уведомления
-│   └── WorkoutSelectionModal/ # Модалка выбора тренировок
+├── components/                         # Переиспользуемые UI-компоненты
+│   ├── Auth/                           # Авторизация и регистрация
+│   │   ├── LoginModal.tsx              # Модальное окно входа
+│   │   ├── LoginModal.test.tsx
+│   │   ├── RegisterModal.tsx           # Модальное окно регистрации
+│   │   └── StyleModal.module.css
+│   │
+│   ├── CourseCard/                     # Карточки курсов (главная страница)
+│   │   ├── CourseCard.tsx
+│   │   ├── CourseCard.test.tsx
+│   │   └── CourseCard.module.css
+│   │
+│   ├── Header/                         # Шапка сайта (навигация, лого, кнопки)
+│   │   ├── Header.tsx
+│   │   └── Header.module.css
+│   │
+│   ├── Layout/                         # Общий layout (обёртка для страниц)
+│   │   └── Layout.tsx
+│   │
+│   ├── Logo/                           # Логотип приложения
+│   │   ├── Logo.tsx
+│   │   └── Logo.module.css
+│   │
+│   ├── ModalUniversalNotifications/    # Универсальное модальное уведомление
+│   │   ├── ModalUniversalNotifications.tsx
+│   │   └── ModalUniversalNotifications.module.css
+│   │
+│   ├── MyCourses/                      # Блок "Мои курсы" в профиле
+│   │   ├── MyCourses.tsx
+│   │   └── MyCourses.module.css
+│   │
+│   ├── Profile/                        # Блок с данными пользователя
+│   │   ├── Profile.tsx
+│   │   └── Profile.module.css
+│   │
+│   ├── ProgressModal/                  # Модалка ввода прогресса тренировки
+│   │   ├── ProgressModal.tsx
+│   │   ├── ProgressModal.test.tsx
+│   │   └── ProgressModal.module.css
+│   │
+│   ├── ScrollToTop/                    # Кнопка "Наверх"
+│   │   ├── ScrollToTop.tsx
+│   │   └── ScrollToTop.module.css
+│   │
+│   ├── Skeleton/                       # Базовый скелетон-загрузчик
+│   │   ├── Skeleton.tsx
+│   │   ├── Skeleton.test.tsx
+│   │   └── Skeleton.module.css
+│   │
+│   ├── SkeletonComponents/             # Составные скелетоны для страниц
+│   │   ├── CourseCardSkeleton.tsx
+│   │   ├── CourseCardSkeleton.module.css
+│   │   ├── CoursePageSkeleton.tsx
+│   │   ├── CoursePageSkeleton.module.css
+│   │   ├── WorkoutsPageSkeleton.tsx
+│   │   └── WorkoutsPageSkeleton.module.css
+│   │
+│   ├── Toast/                          # Всплывающие уведомления (toast)
+│   │   ├── Toast.tsx
+│   │   ├── Toast.test.tsx
+│   │   └── Toast.module.css
+│   │
+│   └── WorkoutSelectionModal/          # Модалка выбора тренировки
+│       ├── WorkoutSelectionModal.tsx
+│       └── WorkoutSelectionModal.module.css
 │
-├── context/                # React Context
-│   └── AuthContext.tsx     # Контекст авторизации и состояния пользователя
+├── context/                            # React Context (глобальное состояние)
+│   └── AuthContext.tsx                 # Контекст авторизации (user, token)
 │
-├── libs/                   # Утилиты и API-клиенты
-│   ├── apiAuth.ts          # Клиент для авторизации (axios)
-│   ├── apiConfig.ts        # Клиент для курсов и прогресса (fetch + JWT)
-│   └── mockCourses.ts      # Моковые данные для fallback при ошибках API
+├── libs/                               # Утилиты и API-клиенты
+│   ├── apiAuth.ts                      # API для авторизации (регистрация/логин)
+│   ├── apiConfig.ts                    # Базовый fetch + JWT-обёртка (apiFetch)
+│   ├── apiFetch.test.ts                # Тесты API-клиента
+│   └── mockCourses.ts                  # Fallback-данные при сбое API
 │
-├── pages/                  # Маршруты (Next.js Pages Router)
-│   ├── _app.tsx            # Корневой компонент приложения
-│   ├── index.tsx           # Главная страница со списком курсов
+├── pages/                              # Маршруты (Next.js Pages Router)
+│   ├── _app.tsx                        # Корневой компонент (провайдеры, стили)
+│   ├── index.tsx                       # Главная — список курсов
 │   ├── indexStyle.module.css
-│   ├── courses/
-│   │   ├── [id].tsx        # Страница конкретного курса
+│   │
+│   ├── courses/                        # Страницы курсов
+│   │   ├── [id].tsx                    # Страница конкретного курса
 │   │   ├── CoursePage.module.css
 │   │   └── [id]/
-│   │       ├── workouts.tsx        # Страница тренировок курса
+│   │       ├── workouts.tsx            # Страница тренировок курса
 │   │       └── WorkoutsPage.module.css
-│   └── profile/
-│       ├── index.tsx       # Страница профиля пользователя
+│   │
+│   └── profile/                        # Личный кабинет
+│       ├── index.tsx                   # Страница профиля
 │       └── ProfilePage.module.css
 │
-├── public/                 # Статические файлы
+├── public/                             # Статические файлы
 │   ├── favicon.ico
-│   └── img/                # Изображения, иконки, кастомный курсор
+│   └── img/                            # Изображения (курсы, иконки, лого)
 │
-└── types/                  # TypeScript интерфейсы
-    ├── auth.ts             # Типы для авторизации
-    └── course.ts           # Типы для курсов и тренировок
+└── types/                              # TypeScript-типы
+    ├── auth.ts                         # Типы пользователя и авторизации
+    └── course.ts                       # Типы курсов и тренировок
 ```
 
 ## 🔐 Архитектура авторизации
@@ -427,6 +473,14 @@ const courseId = useMemo(() => {
 
 ## 🧪 Тестирование функционала
 
+### Написаны тесты (Jest + React Testing Library) к файлам: 
+- LoginModal
+- CourseCard
+- ProgressModal
+- Skeleton
+- Toast
+- apiFetch.
+
 ### Проверка работы авторизации
 
 1. Регистрация нового пользователя:
@@ -469,14 +523,12 @@ console.log("Начинается с eyJ?", token?.startsWith("eyJ"))
 - Решение: Пароль с заглавной буквой и 2+ спецсимволами
 
 ## 🌐 Деплой
-
-### Проект настроен для развёртывания на Cloudflare Pages.
+Проект настроен для развёртывания на Vercel.
 
 - Примечание: На текущем этапе деплой находится в стадии тестирования. Основная разработка ведётся локально.
 
 ## 📋 Планы развития (TODO)
-
-### Реализовано в текущей версии:
+### Реализовано:
 
 - Настройка ESLint (файл `.eslintrc.json`)
 - Настройка Prettier для форматирования кода (файл `.eslintrc.json`)
@@ -494,23 +546,16 @@ console.log("Начинается с eyJ?", token?.startsWith("eyJ"))
 - Адаптивная вёрстка для всех страниц
 - Доступность (a11y) — ARIA-атрибуты, семантика
 - Кэширование данных в sessionStorage
-- Индивидуальное позиционирование фоновых картинок
+- Добавлены скелетоны загрузки вместо текстовых "Загрузка..."
 
 ### Возможные улучшения (зависят от бэкенда):
 
 - Рефакторинг авторизации — если фитнес-API начнёт возвращать данные пользователя вместе с JWT-токеном, можно будет объединить два запроса в один
 - Возврат собственного бэкенда — если потребуется функционал, которого нет во внешнем API (например, загрузка пользовательских аватаров), необходимо вернуть бэкенд как прокси между фронтендом и облачным хранилищем (Yandex Cloud S3)
 
-### Технические улучшения (не зависят от бэкенда):
-
-- Написание тестов (Jest + React Testing Library)
-- Финальная настройка и оптимизация деплоя на Cloudflare Pages
-- Оптимизация производительности (lazy loading изображений, code splitting)
-- Добавление скелетонов загрузки вместо текстовых "Загрузка..."
-
 ## 📊 Итоговая статистика проекта
 
-Компонентов: 12
+Компонентов: 14
 Страниц: 5 (главная, курс, тренировки, профиль, 404)
 Модальных окон: 6 (логин, регистрация, выбор тренировок, прогресс, подтверждение, универсальное)
 API эндпоинтов: 10+
