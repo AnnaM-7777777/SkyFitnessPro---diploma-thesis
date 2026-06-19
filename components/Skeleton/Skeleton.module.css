@@ -1,12 +1,12 @@
 .skeleton {
     background: linear-gradient(
         90deg,
-        var(--bg-tertiary, #f5f5f5) 0%,
-        var(--bg-line, #e0e0e0) 50%,
-        var(--bg-tertiary, #f5f5f5) 100%
+        var(--bg-line) 0%,
+        #ebebeb 50%,
+        var(--bg-line) 100%
     );
     background-size: 200% 100%;
-    animation: skeleton-loading 1.5s ease-in-out infinite;
+    animation: skeleton-loading 2s ease-in-out infinite;
 }
 
 @keyframes skeleton-loading {

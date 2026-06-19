@@ -61,6 +61,25 @@
     justify-content: center;
 }
 
+/* Скелетон */
+.cardSkeleton {
+    background-color: var(--bg-secondary);
+    padding: 16px;
+    border-radius: 30px;
+}
+
+.cardSkeleton__img {
+    height: 325px;
+    border-radius: 30px;
+}
+
+.cardSkeleton__title {
+    width: 70%;
+    height: 35px;
+    margin-top: 24px;
+    border-radius: 50px;
+}
+
 /* Мобильные устройства (до 1024px) */
 @media (max-width: 1024px) {
     /* Блок карточек */
@@ -95,5 +114,10 @@
     /* Блок карточек */
     .container__cards {
         gap: 24px;
+    }
+
+    /* Скелетон */
+    .cardSkeleton__title {
+        height: 26px;
     }
 }
