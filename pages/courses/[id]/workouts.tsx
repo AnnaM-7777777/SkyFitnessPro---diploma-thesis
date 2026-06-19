@@ -8,6 +8,7 @@ import Modal, {
     ModalType,
 } from "@/components/ModalUniversalNotifications/ModalUniversalNotifications"
 import styles from "./WorkoutsPage.module.css"
+import WorkoutsPageSkeleton from "@/components/SkeletonComponents/WorkoutsPageSkeleton"
 
 interface Exercise {
     _id: string
@@ -356,10 +357,8 @@ export default function WorkoutsPage() {
 
     if (loading) {
         return (
-            <Layout showTitle={false}>
-                <div className={styles.container}>
-                    <div className={styles.loading}>Загрузка тренировок...</div>
-                </div>
+            <Layout showTitle={false} showScrollToTop={true}>
+                <WorkoutsPageSkeleton />
             </Layout>
         )
     }
