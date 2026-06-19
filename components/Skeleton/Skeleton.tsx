@@ -10,21 +10,23 @@ interface SkeletonProps {
 }
 
 export default function Skeleton({
-    width = "",
-    height = "",
-    borderRadius = "",
+    width,
+    height,
+    borderRadius,
     className = "",
     style = {},
 }: SkeletonProps) {
     return (
         <div
             className={`${styles.skeleton} ${className}`}
-            style={{
-                width,
-                height,
-                borderRadius,
-                ...style,
-            }}
+            style={
+                {
+                    width: String(width),
+                    height: String(height),
+                    borderRadius: String(borderRadius),
+                    ...style,
+                } as CSSProperties
+            }
         />
     )
 }

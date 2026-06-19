@@ -12,6 +12,7 @@ import Toast from "@/components/Toast/Toast"
 import Modal, {
     ModalType,
 } from "@/components/ModalUniversalNotifications/ModalUniversalNotifications"
+import CourseCardSkeleton from "@/components/SkeletonComponents/CourseCardSkeleton"
 
 type UserData = {
     email: string
@@ -364,7 +365,11 @@ export default function MyCourses() {
     }, [hasHover])
 
     if (loading) {
-        return <div className={styles.loading}>Загрузка курсов...</div>
+        return (
+            <div className={styles.myCourses}>
+                <CourseCardSkeleton count={6} showProgress={true} showButtons={true} />
+            </div>
+        )
     }
 
     if (courses.length === 0) {

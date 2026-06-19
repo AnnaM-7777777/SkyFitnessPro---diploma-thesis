@@ -1,0 +1,17 @@
+.cardSkeleton {
+    padding: 16px;
+    border-radius: 30px;
+    background-color: var(--bg-secondary);
+}
+.cardSkeleton__title {
+    width: 70%;
+    height: 35px;
+    margin-top: 24px;
+    border-radius: 50px;
+}
+
+@media (max-width: 768px) {
+    .cardSkeleton__title {
+        height: 26px;
+    }
+}

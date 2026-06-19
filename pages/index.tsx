@@ -10,7 +10,7 @@ import { MOCK_COURSES } from "@/libs/mockCourses"
 import LoginModal from "../components/Auth/LoginModal"
 import RegisterModal from "../components/Auth/RegisterModal"
 import Toast from "@/components/Toast/Toast"
-import Skeleton from "@/components/Skeleton/Skeleton"
+import CourseCardSkeleton from "@/components/SkeletonComponents/CourseCardSkeleton"
 
 export default function HomePage() {
     const [courses, setCourses] = useState<Course[]>([])
@@ -84,28 +84,7 @@ export default function HomePage() {
 
                 <section className={styles.container__cards}>
                     {loading ? (
-                        <>
-                            {Array.from({ length: 6 }).map((_, index) => (
-                                <div key={index} className={styles.cardSkeleton}>
-                                    <Skeleton className={styles.cardSkeleton__img} />
-                                    <Skeleton className={styles.cardSkeleton__title} />
-
-                                    <div
-                                        style={{
-                                            margin: "20px 0 6px",
-                                            display: "flex",
-                                            gap: "6px",
-                                        }}
-                                    >
-                                        <Skeleton width="30%" height="38px" borderRadius="50px" />
-
-                                        <Skeleton width="60%" height="38px" borderRadius="50px" />
-                                    </div>
-
-                                    <Skeleton width="40%" height="38px" borderRadius="50px" />
-                                </div>
-                            ))}
-                        </>
+                        <CourseCardSkeleton count={6} showProgress={false} showButtons={false} />
                     ) : courses.length > 0 ? (
                         courses.map((course) => (
                             <CourseCard key={course._id || course.id} course={course} />
