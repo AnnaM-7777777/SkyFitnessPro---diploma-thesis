@@ -1,5 +1,5 @@
 import Skeleton from "../Skeleton/Skeleton"
-import styles from "./StylesSkeleton.module.css"
+import styles from "./CourseCardSkeleton.module.css"
 
 interface CourseCardSkeletonProps {
     count?: number
