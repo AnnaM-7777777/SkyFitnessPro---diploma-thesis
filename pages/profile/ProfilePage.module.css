@@ -26,6 +26,10 @@
 }
 
 @media (max-width: 768px) {
+    .profilePage__content {
+        padding: 0 16px;
+    }
+
     .profilePage__title {
         font-weight: 500;
         font-size: 24px;
