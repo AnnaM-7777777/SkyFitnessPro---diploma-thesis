@@ -47,18 +47,18 @@ describe("ProgressModal", () => {
     })
 
     // --- ИНИЦИАЛИЗАЦИЯ ---
-    test("инициализирует инпуты нулями, если initialProgress не передан", () => {
+    test("инициализирует инпуты пустыми значениями, если initialProgress не передан", () => {
         render(<ProgressModal {...defaultProps} />)
         const inputs = screen.getAllByRole("spinbutton")
-        expect(inputs[0]).toHaveValue(0)
-        expect(inputs[1]).toHaveValue(0)
+        expect(inputs[0]).toHaveValue(null) // пустое поле
+        expect(inputs[1]).toHaveValue(null) // пустое поле
     })
 
-    test("корректно подставляет initialProgress и дополняет его нулями", () => {
+    test("корректно подставляет initialProgress и оставляет остальные поля пустыми", () => {
         render(<ProgressModal {...defaultProps} initialProgress={[75]} />)
         const inputs = screen.getAllByRole("spinbutton")
         expect(inputs[0]).toHaveValue(75)
-        expect(inputs[1]).toHaveValue(0)
+        expect(inputs[1]).toHaveValue(null) // пустое поле, а не 0
     })
 
     // --- ВАЛИДАЦИЯ ---
@@ -74,6 +74,17 @@ describe("ProgressModal", () => {
         const input = screen.getAllByRole("spinbutton")[0]
         fireEvent.change(input, { target: { value: "1500" } })
         expect(input).toHaveValue(1000)
+    })
+
+    // --- ОЧИСТКА ПОЛЕЙ ---
+    test("позволяет очистить поле (удалить значение)", () => {
+        render(<ProgressModal {...defaultProps} initialProgress={[50, 60]} />)
+        const input = screen.getAllByRole("spinbutton")[0]
+
+        // Очищаем поле
+        fireEvent.change(input, { target: { value: "" } })
+
+        expect(input).toHaveValue(null) // поле пустое
     })
 
     // --- ОТПРАВКА ---
@@ -119,6 +130,29 @@ describe("ProgressModal", () => {
         })
     })
 
+    test("конвертирует пустые поля в 0 при отправке", async () => {
+        render(<ProgressModal {...defaultProps} />)
+
+        const inputs = screen.getAllByRole("spinbutton")
+
+        // Вводим значение только в первое поле
+        fireEvent.change(inputs[0], { target: { value: "40" } })
+        // Второе поле оставляем пустым
+
+        // Кликаем "Сохранить"
+        fireEvent.click(screen.getByRole("button", { name: /сохранить/i }))
+
+        await waitFor(() => {
+            expect(mockedApiFetch).toHaveBeenCalledWith(
+                "/courses/course123/workouts/workout456",
+                expect.objectContaining({
+                    method: "PATCH",
+                    body: JSON.stringify({ progressData: [40, 0] }), // второе поле = 0
+                })
+            )
+        })
+    })
+
     test("показывает ошибку при сбое API и не закрывает модалку", async () => {
         mockedApiFetch.mockRejectedValueOnce(new Error("Ошибка сети"))
         render(<ProgressModal {...defaultProps} />)
@@ -133,7 +167,7 @@ describe("ProgressModal", () => {
         expect(defaultProps.onClose).not.toHaveBeenCalled()
     })
 
-    // --- РАЗБЛОКИРОВКА ОСЛЕ ОШИБКИ ---
+    // --- РАЗБЛОКИРОВКА ПОСЛЕ ОШИБКИ ---
     test("разблокирует кнопку после ошибки API", async () => {
         mockedApiFetch.mockRejectedValueOnce(new Error("Ошибка"))
         render(<ProgressModal {...defaultProps} />)
@@ -173,8 +207,6 @@ describe("ProgressModal", () => {
     test("закрывает модалку при клике на оверлей", () => {
         render(<ProgressModal {...defaultProps} />)
 
-        // Находим оверлей через data-testid или через DOM-структуру
-        // После настройки styleMock классы будут работать
         const overlay = document.querySelector(".overlay")
         if (overlay) {
             fireEvent.click(overlay)

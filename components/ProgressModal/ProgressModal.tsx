@@ -24,23 +24,35 @@ export default function ProgressModal({
     onClose,
     onSuccess,
 }: ProgressModalProps) {
-    // Инициализируем массив прогресса нулями
-    const [progressData, setProgressData] = useState<number[]>(() => {
+    // Инициализируем массив пустыми строками (чтобы поля были пустыми, а не с нулями)
+    const [progressData, setProgressData] = useState<(number | "")[]>(() => {
         if (!initialProgress || initialProgress.length === 0) {
-            return exercises.map(() => 0)
+            return exercises.map(() => "")
         }
-        // Дополняем нулями, если initialProgress короче exercises
-        return exercises.map((_, index) => initialProgress[index] || 0)
+        // Если есть initialProgress — подставляем числа, остальные поля — пустые
+        return exercises.map((_, index) =>
+            initialProgress[index] !== undefined ? initialProgress[index] : ""
+        )
     })
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
     const handleInputChange = (index: number, value: string) => {
-        const numValue = value === "" ? 0 : parseInt(value)
-        // Валидация: только числа >= 0
-        const clampedValue = Math.max(0, Math.min(numValue, 1000))
-
         const newData = [...progressData]
+
+        // Если поле пустое — сохраняем пустую строку
+        if (value === "") {
+            newData[index] = ""
+            setProgressData(newData)
+            return
+        }
+
+        const numValue = parseInt(value)
+        // Игнорируем невалидный ввод (буквы, спецсимволы)
+        if (isNaN(numValue)) return
+
+        // Валидация: только числа от 0 до 1000
+        const clampedValue = Math.max(0, Math.min(numValue, 1000))
         newData[index] = clampedValue
         setProgressData(newData)
     }
@@ -50,9 +62,12 @@ export default function ProgressModal({
         setError(null)
 
         try {
+            // При отправке конвертируем пустые значения в 0
+            const submitData = progressData.map((value) => (value === "" ? 0 : value))
+
             await apiFetch(`/courses/${courseId}/workouts/${workoutId}`, {
                 method: "PATCH",
-                body: JSON.stringify({ progressData }),
+                body: JSON.stringify({ progressData: submitData }),
             })
 
             onSuccess()
