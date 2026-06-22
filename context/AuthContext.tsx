@@ -1,15 +1,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react"
 import { useRouter } from "next/router"
-import {
-    login as authLogin,
-    register as authRegister,
-    fitnessLogin,
-    fitnessRegister,
-    type AuthUser,
-} from "@/libs/apiAuth"
+import { fitnessLogin, fitnessRegister } from "@/libs/apiAuth"
 
 type User = {
-    _id: string
     email: string
     name: string
     imageUrl?: string
@@ -45,13 +38,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [isLoading, setIsLoading] = useState(true)
     const router = useRouter()
 
-    // Вынесенная функция сохранения сессии (устраняет дублирование)
-    const saveUserSession = (authUser: AuthUser, fitnessToken: string) => {
+    // Функция сохранения сессии (упрощённая)
+    const saveUserSession = (email: string, name: string, fitnessToken: string) => {
         const userData = {
-            _id: authUser._id,
-            email: authUser.login,
-            name: authUser.name,
-            imageUrl: authUser.imageUrl,
+            email,
+            name,
+            imageUrl: "/img/avatar.png", // Дефолтный аватар
         }
 
         localStorage.setItem("fitness_token", fitnessToken)
@@ -61,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(userData)
     }
 
-    // useEffect с защитой от повреждённого JSON в localStorage
+    // Восстановление сессии из localStorage
     useEffect(() => {
         const fitnessToken = localStorage.getItem("fitness_token")
         const fitnessUser = localStorage.getItem("fitness_user")
@@ -72,7 +64,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 setUser(JSON.parse(fitnessUser))
             } catch (err) {
                 console.error("Ошибка парсинга user из localStorage:", err)
-                // Очищаем повреждённые данные
                 localStorage.removeItem("fitness_token")
                 localStorage.removeItem("fitness_user")
             }
@@ -81,17 +72,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoading(false)
     }, [])
 
-    // Двойная авторизация: основной API для профиля, фитнес-API для курсов
+    // Авторизация только через фитнес-API
     const login = async (email: string, password: string) => {
         try {
-            const authUser: AuthUser = await authLogin({
-                login: email,
-                password,
-            })
-
             const fitnessData = await fitnessLogin(email, password)
 
-            saveUserSession(authUser, fitnessData.token)
+            // Извлекаем имя из email (часть до @)
+            const name = email.split("@")[0]
+
+            saveUserSession(email, name, fitnessData.token)
             router.push("/")
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : "Ошибка входа"
@@ -99,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     }
 
-    // Двойная авторизация: основной API для профиля, фитнес-API для курсов
+    // Регистрация только через фитнес-API
     const register = async (email: string, password: string, name?: string) => {
         const passwordError = validateFitnessPassword(password)
         if (passwordError) {
@@ -107,16 +96,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         try {
-            const authUser: AuthUser = await authRegister({
-                login: email,
-                password,
-                name: name || email.split("@")[0],
-            })
-
             await fitnessRegister(email, password)
             const fitnessData = await fitnessLogin(email, password)
 
-            saveUserSession(authUser, fitnessData.token)
+            const userName = name || email.split("@")[0]
+
+            saveUserSession(email, userName, fitnessData.token)
             router.push("/")
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : "Ошибка регистрации"
